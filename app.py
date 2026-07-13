@@ -16,9 +16,14 @@ import streamlit as st
 import pandas as pd
 
 # 프로젝트 루트 경로 추가 (모듈 임포트 호환성 확보)
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(BASE_DIR)
+sys.path.append(os.path.dirname(BASE_DIR))
 
-from project2_team3.src.engine.scoring import get_recommendations
+try:
+    from src.engine.scoring import get_recommendations
+except ModuleNotFoundError:
+    from project2_team3.src.engine.scoring import get_recommendations
 
 # 페이지 설정
 st.set_page_config(
