@@ -1,12 +1,10 @@
 """
-NutriFit 영양제 추천 스마트 대시보드 MVP (Streamlit - 연령대 세분화 및 알레르기 필터 고도화 버전)
+NutriFit 영양제 추천 스마트 대시보드 MVP (Streamlit - 부작용 경험 없음 옵션 및 배타적 선택 추가 버전)
 
 이 스크립트는 면책 공지 및 필수 개인정보 동의 화면을 시작으로,
 사용자의 인구통계학적 특성, 라이프스타일, 안전성 필터(부작용 및 알레르기), 
 건강 고민 등 23개 전항목 문진을 기반으로 초개인화된 영양제를 추천하는 대시보드 앱입니다.
-팀 피드백에 맞춰 연령대 세분화, 알레르기 '과일류' 및 직접입력 하드필터, 지병 배타적(Exclusive) 선택,
-건강 고민 최대 3개 가산점 1/N 균등분배, 선호제형 정제/캡슐 우선 배치를 구현했습니다.
-또한 자동화 검증과 유저 경험 고도화를 위해 주요 위젯에 기본 테스트 값들을 디폴트 지정했습니다.
+14번 부작용 경험 성분에 '없음' 옵션을 추가하고 지병처럼 배타적(Exclusive) 상호배제 로직을 탑재했습니다.
 """
 
 import os
@@ -296,7 +294,6 @@ def main():
                 )
         
         with col_s1_2:
-            # 1. 연령대 선택지 세분화 적용
             age = st.selectbox(
                 "4. 연령대:",
                 ["영유아 및 어린이(만 1세~12세)", "청소년(13세~19세)", "20세~25세", "26세~29세", "30대", "40대", "50대", "60대 이상"],
@@ -354,7 +351,6 @@ def main():
         with col_s3_1:
             smoking = st.radio("12. 흡연 여부:", ["비흡연", "흡연"])
             
-            # 2. 알레르기 과일류 추가 및 직접입력 처리 (기본 테스트값: 과일류)
             allergies_raw = st.multiselect(
                 "13. 알레르기 원료 (복수선택):",
                 ["갑각류", "대두", "글루텐", "유제품", "견과류", "어류", "과일류", "없음", "기타(직접입력)"],
@@ -372,15 +368,28 @@ def main():
                 allergies = allergies_raw
                 
         with col_s3_2:
-            side_effects = st.multiselect(
+            # 14. 과거 부작용 경험 성분 '없음' 및 배타적(Exclusive) 로직 추가
+            side_effects_raw = st.multiselect(
                 "14. 과거 부작용 경험 성분 (복수선택):",
-                ["철분", "오메가3", "비타민C", "유산균", "기타 직접입력"]
+                ["철분", "오메가3", "비타민C", "유산균", "없음", "기타 직접입력"],
+                default=["없음"]
             )
+            
             side_effect_direct = ""
-            if "기타 직접입력" in side_effects:
+            if "기타 직접입력" in side_effects_raw:
                 side_effect_direct = st.text_input("14-1. 부작용 성분 직접 입력 (쉼표 구분 가능):")
             
-            # 3. 지병 및 복용 약물 '없음' 배타적 처리 및 기타 직접입력 분리 구현 (기본 테스트값: 당뇨)
+            # 없음 배타적 처리 적용
+            side_effects = []
+            if "없음" in side_effects_raw:
+                if len(side_effects_raw) > 1:
+                    side_effects = [s for s in side_effects_raw if s != "없음"]
+                    st.info("💡 **'없음'** 외의 부작용 성분이 선택되어 '없음' 항목이 자동으로 해제되었습니다.")
+                else:
+                    side_effects = ["없음"]
+            else:
+                side_effects = side_effects_raw
+            
             diseases_raw = st.multiselect(
                 "15. 지병 및 복용 약물 (복수선택):",
                 ["고혈압", "당뇨", "이상지질혈증", "만성 위장질환", "혈전 관련질환-항응고제", "간·신장질환", "없음(단독 선택)", "기타(직접입력)"],
@@ -405,7 +414,6 @@ def main():
         # STEP 4. 건강 고민 및 목표 (Health Goals)
         st.markdown("---")
         st.markdown("### 🎯 STEP4. 건강 고민 및 목표")
-        # 4. 건강고민 최대 3개 다중 선택 확장 (기본값으로 3개 고민 배치)
         health_goals = st.multiselect(
             "16. 건강 고민 및 목표 (최대 3개 선택):",
             ["만성피로", "눈 건조·피로", "장 건강", "피부탄력·이너뷰티", "체지방감소·다이어트", "면역력저하", "관절보호", "수면부족·스트레스케어", "항노화·항산화", "생리불순·생리통"],
@@ -423,7 +431,6 @@ def main():
                 "18. 대안 제형 선호:",
                 ["소형 알약", "구미·젤리", "액상·드링크", "분말·포"]
             )
-            # 5. 선호제형 정제(알약/정) 및 캡슐 최상단 기본값 배치
             pref_form = st.selectbox(
                 "19. 선호하는 영양제 형태:",
                 ["정제(알약/정)", "캡슐", "젤리", "구미", "액상", "분말"],
@@ -532,7 +539,7 @@ def main():
         direct_banned = survey.get("side_effect_direct", "").strip()
         if direct_banned:
             banned_list.append(direct_banned)
-        banned_list = [b for b in banned_list if b != "기타 직접입력"]
+        banned_list = [b for b in banned_list if b != "기타 직접입력" and b != "없음"]
         
         col_f1, col_f2 = st.columns(2)
         with col_f1:
@@ -572,17 +579,25 @@ def main():
         
         survey = st.session_state.survey_data
         
+        # 부작용 목록 정제
+        side_effects_cleaned = [s for s in survey.get("side_effects", []) if s not in ["없음", "기타 직접입력"]]
+        if survey.get("side_effect_direct", "").strip():
+            side_effects_cleaned.append(survey.get("side_effect_direct"))
+            
         # 알레르기 목록 정제
         algs = list(survey.get("allergies", []))
         if survey.get("allergy_direct", "").strip():
             algs.append(survey.get("allergy_direct"))
         algs_display = [a for a in algs if a not in ["없음", "기타(직접입력)"]]
         
+        exclusions = side_effects_cleaned + algs_display
+        exclusions_str = ', '.join(exclusions) if exclusions else '없음'
+        
         st.markdown(f"""
             <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
                 <strong>📊 분석 대상자 프로필:</strong> {survey['gender']} ({survey['age']}) | BMI: {survey['bmi']} | 
                 🎯 <strong>핵심 건강고민(가산점 분배):</strong> {', '.join(survey['health_goals'])} | 
-                🚫 <strong>배제된 부작용/알레르기:</strong> {', '.join([s for s in survey['side_effects'] if s != '기타 직접입력'] + ([survey['side_effect_direct']] if survey['side_effect_direct'] else []) + algs_display) or '없음'}
+                🚫 <strong>배제된 부작용/알레르기:</strong> {exclusions_str}
             </div>
         """, unsafe_allow_html=True)
         
