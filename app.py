@@ -1,12 +1,12 @@
 """
-NutriFit 영양제 추천 스마트 대시보드 MVP (Streamlit - 동의 화면 및 로그인 데모 강화 버전)
+NutriFit 영양제 추천 스마트 대시보드 MVP (Streamlit - 연령대 세분화 및 알레르기 필터 고도화 버전)
 
 이 스크립트는 면책 공지 및 필수 개인정보 동의 화면을 시작으로,
 사용자의 인구통계학적 특성, 라이프스타일, 안전성 필터(부작용 및 알레르기), 
 건강 고민 등 23개 전항목 문진을 기반으로 초개인화된 영양제를 추천하는 대시보드 앱입니다.
-st.session_state 기반의 3단계(Step) 네비게이션 구조를 적용하여
-성별 동적 분기 및 BMI 실시간 즉시 연산 버그를 st.form 해제를 통해 완벽히 해결했습니다.
-추가로 양방향 전체 동의/접이식 약관 UI 및 비회원 진단 기반 간이 로그인/회원가입 데모를 지원합니다.
+팀 피드백에 맞춰 연령대 세분화, 알레르기 '과일류' 및 직접입력 하드필터, 지병 배타적(Exclusive) 선택,
+건강 고민 최대 3개 가산점 1/N 균등분배, 선호제형 정제/캡슐 우선 배치를 구현했습니다.
+또한 자동화 검증과 유저 경험 고도화를 위해 주요 위젯에 기본 테스트 값들을 디폴트 지정했습니다.
 """
 
 import os
@@ -241,11 +241,9 @@ def main():
         
         st.write("서비스 이용을 위해 아래 필수 약관에 동의해 주세요.")
         
-        # 1. 전체 동의 체크박스
         st.checkbox("전체 동의합니다.", key="all_agree", on_change=on_all_agree_change)
         st.markdown("---")
         
-        # 2. 개별 약관 및 상세 접이식 박스 (st.expander) 명세
         col_ag1 = st.checkbox("1. [필수] 서비스 이용약관 및 일반 개인정보 수집·이용 동의", key="agree_1", on_change=on_individual_change)
         with st.expander("📜 약관 상세내역 조회"):
             st.markdown("""
@@ -266,7 +264,6 @@ def main():
                 * **수집 항목**: 성별, 연령대, 신체 스펙(키, 몸무게), 라이프스타일 습관(운동, 음주, 카페인, 수면, 흡연), 지병 및 과거 부작용 경험 성분
             """)
             
-        # 모든 필수 항목(1, 2, 3) 동의 여부 검사
         agreed_all_checked = st.session_state.agree_1 and st.session_state.agree_2 and st.session_state.agree_3
         
         if st.button("동의하고 시작하기", disabled=not agreed_all_checked):
@@ -284,7 +281,6 @@ def main():
         with col_s1_1:
             gender = st.radio("1. 성별:", ["남성", "여성", "응답하지 않음"])
             
-            # 성별 변경에 따라 화면이 즉각적으로 트리거됨
             male_worries = []
             if gender == "남성":
                 male_worries = st.multiselect(
@@ -300,9 +296,11 @@ def main():
                 )
         
         with col_s1_2:
+            # 1. 연령대 선택지 세분화 적용
             age = st.selectbox(
                 "4. 연령대:",
-                ["20대 미만", "20대", "30대", "40대", "50대", "60대 이상"]
+                ["영유아 및 어린이(만 1세~12세)", "청소년(13세~19세)", "20세~25세", "26세~29세", "30대", "40대", "50대", "60대 이상"],
+                index=4 # 기본값 30대
             )
             height = st.number_input("5-1. 키 (cm):", min_value=100.0, max_value=250.0, value=170.0, step=0.1)
             weight = st.number_input("5-2. 몸무게 (kg):", min_value=30.0, max_value=200.0, value=65.0, step=0.1)
@@ -355,12 +353,24 @@ def main():
         col_s3_1, col_s3_2 = st.columns(2)
         with col_s3_1:
             smoking = st.radio("12. 흡연 여부:", ["비흡연", "흡연"])
-            allergies = st.multiselect(
+            
+            # 2. 알레르기 과일류 추가 및 직접입력 처리 (기본 테스트값: 과일류)
+            allergies_raw = st.multiselect(
                 "13. 알레르기 원료 (복수선택):",
-                ["갑각류", "대두", "글루텐", "유제품", "견과류", "어류", "없음"],
-                default=["없음"]
+                ["갑각류", "대두", "글루텐", "유제품", "견과류", "어류", "과일류", "없음", "기타(직접입력)"],
+                default=["과일류"]
             )
-        
+            
+            allergy_direct = ""
+            if "기타(직접입력)" in allergies_raw:
+                allergy_direct = st.text_input("13-1. 알레르기 직접 입력 (쉼표 구분):")
+            
+            allergies = []
+            if "없음" in allergies_raw and len(allergies_raw) > 1:
+                allergies = [a for a in allergies_raw if a != "없음"]
+            else:
+                allergies = allergies_raw
+                
         with col_s3_2:
             side_effects = st.multiselect(
                 "14. 과거 부작용 경험 성분 (복수선택):",
@@ -370,20 +380,37 @@ def main():
             if "기타 직접입력" in side_effects:
                 side_effect_direct = st.text_input("14-1. 부작용 성분 직접 입력 (쉼표 구분 가능):")
             
-            diseases = st.multiselect(
+            # 3. 지병 및 복용 약물 '없음' 배타적 처리 및 기타 직접입력 분리 구현 (기본 테스트값: 당뇨)
+            diseases_raw = st.multiselect(
                 "15. 지병 및 복용 약물 (복수선택):",
-                ["고혈압", "당뇨", "이상지질혈증", "만성 위장질환", "혈전 관련질환-항응고제", "간·신장질환", "없음·기타"],
-                default=["없음·기타"]
+                ["고혈압", "당뇨", "이상지질혈증", "만성 위장질환", "혈전 관련질환-항응고제", "간·신장질환", "없음(단독 선택)", "기타(직접입력)"],
+                default=["당뇨"]
             )
+            
+            disease_direct = ""
+            if "기타(직접입력)" in diseases_raw:
+                disease_direct = st.text_input("15-1. 지병 및 복용 약물 직접 입력 (기타 직접 입력용):")
+            
+            # 없음(단독 선택) 배타적 처리 적용
+            diseases = []
+            if "없음(단독 선택)" in diseases_raw:
+                if len(diseases_raw) > 1:
+                    diseases = [d for d in diseases_raw if d != "없음(단독 선택)"]
+                    st.info("💡 **'없음(단독 선택)'** 외의 다른 지병이 선택되어 '없음' 항목이 자동으로 해제되었습니다.")
+                else:
+                    diseases = ["없음(단독 선택)"]
+            else:
+                diseases = diseases_raw
 
         # STEP 4. 건강 고민 및 목표 (Health Goals)
         st.markdown("---")
         st.markdown("### 🎯 STEP4. 건강 고민 및 목표")
+        # 4. 건강고민 최대 3개 다중 선택 확장 (기본값으로 3개 고민 배치)
         health_goals = st.multiselect(
-            "16. 건강 고민 및 목표 (최대 2개 선택):",
+            "16. 건강 고민 및 목표 (최대 3개 선택):",
             ["만성피로", "눈 건조·피로", "장 건강", "피부탄력·이너뷰티", "체지방감소·다이어트", "면역력저하", "관절보호", "수면부족·스트레스케어", "항노화·항산화", "생리불순·생리통"],
-            default=["만성피로"],
-            max_selections=2
+            default=["만성피로", "눈 건조·피로", "장 건강"],
+            max_selections=3
         )
         
         # STEP 5. 섭취 편의성 및 구매 성향 (Preference)
@@ -396,7 +423,12 @@ def main():
                 "18. 대안 제형 선호:",
                 ["소형 알약", "구미·젤리", "액상·드링크", "분말·포"]
             )
-            pref_form = st.selectbox("19. 선호하는 영양제 형태:", ["젤리", "구미", "액상", "분말"])
+            # 5. 선호제형 정제(알약/정) 및 캡슐 최상단 기본값 배치
+            pref_form = st.selectbox(
+                "19. 선호하는 영양제 형태:",
+                ["정제(알약/정)", "캡슐", "젤리", "구미", "액상", "분말"],
+                index=0
+            )
             buy_method = st.selectbox("23. 구매 방식 선호:", ["정기구독", "1회구매", "상관없음"])
         
         with col_s5_2:
@@ -436,9 +468,11 @@ def main():
                 "stress": stress,
                 "smoking": smoking,
                 "allergies": allergies,
+                "allergy_direct": allergy_direct,
                 "side_effects": side_effects,
                 "side_effect_direct": side_effect_direct,
                 "diseases": diseases,
+                "disease_direct": disease_direct,
                 "health_goals": health_goals,
                 "pill_discomfort": pill_discomfort,
                 "alternative_form": alternative_form,
@@ -464,7 +498,7 @@ def main():
         bonuses = calculate_wellness_bonus(survey)
         
         st.markdown("### 🧬 내 몸에 필요한 6대 핵심 영양제 가산점 현황")
-        st.write("유저의 일상 라이프스타일, 기본 정보 및 주요 건강 고민을 복합 분석하여 산출된 각 원료 성분별 보너스 스코어입니다.")
+        st.write("유저의 일상 라이프스타일, 기본 정보 및 주요 건강 고민(최대 3개)에 대한 스코어 분배율을 복합 분석하여 산출된 보너스 스코어입니다.")
         
         col_b1, col_b2, col_b3 = st.columns(3)
         cols = [col_b1, col_b2, col_b3]
@@ -477,7 +511,7 @@ def main():
             comment = "기본 섭취 권장"
             if score >= 8.0:
                 comment = "🚨 매우 필요 (집중 섭취 추천)"
-            elif score >= 4.0:
+            elif score >= 1.5:
                 comment = "⭐ 적극 권장 (맞춤 매칭)"
                 
             col.markdown(f"""
@@ -485,7 +519,7 @@ def main():
                     <span style="font-size: 0.85rem; color: #94a3b8;">영양소 성분</span>
                     <h4 style="margin: 2px 0 6px 0; color: #f8fafc;">{key}</h4>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 1.8rem; font-weight: 800; color: #10b981;">+{score}</span>
+                        <span style="font-size: 1.8rem; font-weight: 800; color: #10b981;">+{score:.2f}</span>
                         <span style="font-size: 0.8rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 5px;">{comment}</span>
                     </div>
                 </div>
@@ -504,14 +538,19 @@ def main():
         with col_f1:
             st.markdown("#### 🚫 부작용 배제 필터")
             if banned_list:
-                st.error(f"다음 성분들이 함유된 영양제 제품군은 추천 리스트에서 **원천 배제(Hard Filter)** 처리되었습니다:\n\n`{', '.join(banned_list)}`")
+                st.error(f"다음 부작용 성분이 함유된 제품군은 추천 리스트에서 **원천 배제(Hard Filter)** 처리되었습니다:\n\n`{', '.join(banned_list)}`")
             else:
                 st.success("부작용 배제 성분이 설정되지 않았습니다. 모든 맞춤 영양제를 정상 매칭합니다.")
         with col_f2:
             st.markdown("#### 🌾 알레르기 및 주의 원료")
-            allergies = survey.get("allergies", [])
-            if allergies and "없음" not in allergies:
-                st.warning(f"섭취 시 원재료 확인 필요 알레르기 유발 의심 원료:\n\n`{', '.join(allergies)}`")
+            allergies = list(survey.get("allergies", []))
+            allergy_direct = survey.get("allergy_direct", "").strip()
+            if allergy_direct:
+                allergies.append(allergy_direct)
+            allergies_cleaned = [a for a in allergies if a not in ["없음", "기타(직접입력)"]]
+            
+            if allergies_cleaned:
+                st.error(f"다음 알레르기 유발 물질이 포함된 제품군은 추천 리스트에서 **원천 배제(Hard Filter)** 처리되었습니다:\n\n`{', '.join(allergies_cleaned)}`")
             else:
                 st.success("알레르기 필터가 적용되지 않았습니다.")
                 
@@ -533,12 +572,17 @@ def main():
         
         survey = st.session_state.survey_data
         
-        # 상단 유저 요약 프로필
+        # 알레르기 목록 정제
+        algs = list(survey.get("allergies", []))
+        if survey.get("allergy_direct", "").strip():
+            algs.append(survey.get("allergy_direct"))
+        algs_display = [a for a in algs if a not in ["없음", "기타(직접입력)"]]
+        
         st.markdown(f"""
             <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
                 <strong>📊 분석 대상자 프로필:</strong> {survey['gender']} ({survey['age']}) | BMI: {survey['bmi']} | 
-                🎯 <strong>핵심 건강고민:</strong> {', '.join(survey['health_goals'])} | 
-                🚫 <strong>배제된 부작용 성분:</strong> {', '.join([s for s in survey['side_effects'] if s != '기타 직접입력'] + ([survey['side_effect_direct']] if survey['side_effect_direct'] else [])) or '없음'}
+                🎯 <strong>핵심 건강고민(가산점 분배):</strong> {', '.join(survey['health_goals'])} | 
+                🚫 <strong>배제된 부작용/알레르기:</strong> {', '.join([s for s in survey['side_effects'] if s != '기타 직접입력'] + ([survey['side_effect_direct']] if survey['side_effect_direct'] else []) + algs_display) or '없음'}
             </div>
         """, unsafe_allow_html=True)
         
@@ -562,7 +606,7 @@ def main():
             return
 
         if recommendations.empty:
-            st.warning("⚠️ 입력하신 부작용 성분 필터 또는 맞춤 가중치 조건에 해당하는 제품이 목록에 존재하지 않거나 모두 필터링되었습니다.")
+            st.warning("⚠️ 입력하신 알레르기/부작용 필터 또는 맞춤 가중치 조건에 해당하는 제품이 목록에 존재하지 않거나 모두 필터링되었습니다.")
             if st.button("⬅️ 웰니스 리포트로 돌아가기"):
                 st.session_state.step = 2
                 st.rerun()
@@ -616,7 +660,7 @@ def main():
                                 <span style="font-size: 0.85rem; color: #94a3b8; margin-left: 8px;">{brand}</span>
                                 <h4 style="margin: 8px 0 4px 0; color: #f8fafc; font-size: 1rem;">{name}</h4>
                                 <span style="font-size: 0.85rem; color: #38bdf8;">🧬 표준성분: {std_ing}</span>
-                                <div style="margin-top: 4px; font-size: 0.8rem; color: #a7f3d0;">💡 웰니스 맞춤 가산점: +{bonus}점</div>
+                                <div style="margin-top: 4px; font-size: 0.8rem; color: #a7f3d0;">💡 웰니스 맞춤 가산점: +{bonus:.2f}점</div>
                             </div>
                             <div style="text-align: right;">
                                 <span class="score-badge">★ {score}</span>
@@ -683,7 +727,6 @@ def main():
                     st.rerun()
             with col_btn_back2:
                 if st.button("🔄 문진 새로 작성하기"):
-                    # 상태 완전 리셋
                     st.session_state.agreed = False
                     st.session_state.step = 1
                     st.session_state.survey_data = {}
