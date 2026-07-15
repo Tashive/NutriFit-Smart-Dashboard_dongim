@@ -1,12 +1,12 @@
 """
-NutriFit 영양제 추천 스마트 대시보드 MVP (Streamlit - st.session_state 3단계 분기 정교화 버전)
+NutriFit 영양제 추천 스마트 대시보드 MVP (Streamlit - 동의 화면 및 로그인 데모 강화 버전)
 
 이 스크립트는 면책 공지 및 필수 개인정보 동의 화면을 시작으로,
 사용자의 인구통계학적 특성, 라이프스타일, 안전성 필터(부작용 및 알레르기), 
 건강 고민 등 23개 전항목 문진을 기반으로 초개인화된 영양제를 추천하는 대시보드 앱입니다.
 st.session_state 기반의 3단계(Step) 네비게이션 구조를 적용하여
 성별 동적 분기 및 BMI 실시간 즉시 연산 버그를 st.form 해제를 통해 완벽히 해결했습니다.
-사용자 테스트 편의성을 위해 주요 다중 선택 위젯에 디폴트 값을 제공합니다.
+추가로 양방향 전체 동의/접이식 약관 UI 및 비회원 진단 기반 간이 로그인/회원가입 데모를 지원합니다.
 """
 
 import os
@@ -77,6 +77,20 @@ def find_foodsafety_info(standard_ingredients, db_data):
                     break
     return matched_infos
 
+# 양방향 동의 동기화 콜백 함수들
+def on_all_agree_change():
+    val = st.session_state.all_agree
+    st.session_state.agree_1 = val
+    st.session_state.agree_2 = val
+    st.session_state.agree_3 = val
+
+def on_individual_change():
+    st.session_state.all_agree = (
+        st.session_state.agree_1 and
+        st.session_state.agree_2 and
+        st.session_state.agree_3
+    )
+
 def main():
     # 프리미엄 CSS 스타일 커스텀 주입
     st.markdown("""
@@ -96,7 +110,7 @@ def main():
             font-family: 'Noto Sans KR', sans-serif;
             font-size: 1.1rem;
             color: #94a3b8;
-            margin-bottom: 30px;
+            margin-bottom: 5px;
         }
         .product-card {
             background: rgba(30, 41, 59, 0.4);
@@ -136,18 +150,84 @@ def main():
         </style>
     """, unsafe_allow_html=True)
 
+    # 1. 사이드바 - 간이 로그인/회원가입 데모 UI 배치
+    st.sidebar.markdown("### 🔑 멤버십 서비스")
+    if 'user_logged_in' not in st.session_state:
+        st.session_state.user_logged_in = False
+    if 'logged_in_username' not in st.session_state:
+        st.session_state.logged_in_username = ""
+        
+    if not st.session_state.user_logged_in:
+        st.sidebar.info("🔑 로그인하여 장바구니 저장하기 (추후 연동)")
+        tab_login, tab_register = st.sidebar.tabs(["로그인 데모", "회원가입 데모"])
+        
+        with tab_login:
+            login_id = st.text_input("아이디:", key="login_id")
+            login_pw = st.text_input("비밀번호:", type="password", key="login_pw")
+            if st.button("로그인"):
+                if login_id.strip() and login_pw.strip():
+                    st.session_state.user_logged_in = True
+                    st.session_state.logged_in_username = login_id.strip()
+                    st.sidebar.success(f"🎉 {login_id}님 로그인 성공!")
+                    st.rerun()
+                else:
+                    st.sidebar.error("아이디와 비밀번호를 입력해 주세요.")
+                    
+        with tab_register:
+            reg_id = st.text_input("가입할 아이디:", key="reg_id")
+            reg_pw = st.text_input("비밀번호 설정:", type="password", key="reg_pw")
+            reg_pw_confirm = st.text_input("비밀번호 확인:", type="password", key="reg_pw_confirm")
+            if st.button("간이 회원가입"):
+                if reg_id.strip() and reg_pw.strip():
+                    if reg_pw == reg_pw_confirm:
+                        st.sidebar.success("회원가입 성공! 로그인 탭에서 입력해 주세요.")
+                    else:
+                        st.sidebar.error("비밀번호가 일치하지 않습니다.")
+                else:
+                    st.sidebar.error("모든 정보를 올바르게 기입해 주세요.")
+    else:
+        st.sidebar.markdown(f"**👤 회원: `{st.session_state.logged_in_username}`님**")
+        st.sidebar.write("✅ 장바구니 실시간 동기화 상태 활성화")
+        if st.button("로그아웃"):
+            st.session_state.user_logged_in = False
+            st.session_state.logged_in_username = ""
+            st.rerun()
+
+    # 2. 최상단 회원/비회원 배지 동적 노출
+    badge_label = "👤 회원 맞춤 진단 중" if st.session_state.user_logged_in else "🔴 비회원 맞춤 진단 중"
+    badge_color = "#10b981" if st.session_state.user_logged_in else "#ef4444"
+    
+    st.markdown(f"""
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div></div>
+            <div style="background: {badge_color}; color: white; padding: 5px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
+                {badge_label}
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
     st.markdown('<div class="main-title">🥗 NutriFit Smart Dashboard</div>', unsafe_allow_html=True)
     st.markdown('<div class="sub-title">식약처 공인 데이터베이스 및 초개인화 가중 스코어링 기반 웰니스 큐레이션</div>', unsafe_allow_html=True)
 
     db_data = load_foodsafety_db()
 
-    # Session State 초기화 (st.session_state 기반 3단계 네비게이션 구조 강제)
+    # Session State 초기화
     if 'step' not in st.session_state:
         st.session_state.step = 1
     if 'agreed' not in st.session_state:
         st.session_state.agreed = False
     if 'survey_data' not in st.session_state:
         st.session_state.survey_data = {}
+        
+    # 양방향 동의 상태 초기화
+    if 'all_agree' not in st.session_state:
+        st.session_state.all_agree = False
+    if 'agree_1' not in st.session_state:
+        st.session_state.agree_1 = False
+    if 'agree_2' not in st.session_state:
+        st.session_state.agree_2 = False
+    if 'agree_3' not in st.session_state:
+        st.session_state.agree_3 = False
 
     # ==================== 화면 분기 0: 면책 공지 및 필수 동의 화면 ====================
     if not st.session_state.agreed:
@@ -161,11 +241,35 @@ def main():
         
         st.write("서비스 이용을 위해 아래 필수 약관에 동의해 주세요.")
         
-        agree_1 = st.checkbox("1. [필수] 서비스 이용약관 및 일반 개인정보 수집·이용 동의")
-        agree_2 = st.checkbox("2. [필수] 만 14세 이상 이용 확인 (만 14세 미만은 이용이 제한됩니다)")
-        agree_3 = st.checkbox("3. [필수] 건강 상태 및 라이프스타일(민감정보) 수집·이용 동의 (질환 정보, 복용 약물 등 수집 안내문 포함)")
+        # 1. 전체 동의 체크박스
+        st.checkbox("전체 동의합니다.", key="all_agree", on_change=on_all_agree_change)
+        st.markdown("---")
         
-        if st.button("동의하고 시작하기", disabled=not (agree_1 and agree_2 and agree_3)):
+        # 2. 개별 약관 및 상세 접이식 박스 (st.expander) 명세
+        col_ag1 = st.checkbox("1. [필수] 서비스 이용약관 및 일반 개인정보 수집·이용 동의", key="agree_1", on_change=on_individual_change)
+        with st.expander("📜 약관 상세내역 조회"):
+            st.markdown("""
+                * **수집 목적**: 개인 맞춤형 영양소 큐레이션 및 대시보드 제공
+                * **보유 및 이용 기간**: **목적 달성 즉시 파기** (탈퇴 또는 브라우저 세션 종료 시 즉시 영구 삭제)
+            """)
+            
+        col_ag2 = st.checkbox("2. [필수] 만 14세 이상 이용 확인", key="agree_2", on_change=on_individual_change)
+        with st.expander("📜 약관 상세내역 조회"):
+            st.markdown("""
+                * **제한 고시**: 본 서비스는 아동의 민감정보 수집 방지를 위해 **만 14세 미만의 이용을 제한**합니다.
+            """)
+            
+        col_ag3 = st.checkbox("3. [필수] 건강 상태 및 라이프스타일(민감정보) 수집·이용 동의", key="agree_3", on_change=on_individual_change)
+        with st.expander("📜 약관 상세내역 조회"):
+            st.markdown("""
+                * **법적 근거**: **개인정보보호법 제23조**에 의거, 질환 정보 및 부작용 이력 등 민감정보 수집에 동의합니다.
+                * **수집 항목**: 성별, 연령대, 신체 스펙(키, 몸무게), 라이프스타일 습관(운동, 음주, 카페인, 수면, 흡연), 지병 및 과거 부작용 경험 성분
+            """)
+            
+        # 모든 필수 항목(1, 2, 3) 동의 여부 검사
+        agreed_all_checked = st.session_state.agree_1 and st.session_state.agree_2 and st.session_state.agree_3
+        
+        if st.button("동의하고 시작하기", disabled=not agreed_all_checked):
             st.session_state.agreed = True
             st.session_state.step = 1
             st.rerun()
@@ -278,7 +382,7 @@ def main():
         health_goals = st.multiselect(
             "16. 건강 고민 및 목표 (최대 2개 선택):",
             ["만성피로", "눈 건조·피로", "장 건강", "피부탄력·이너뷰티", "체지방감소·다이어트", "면역력저하", "관절보호", "수면부족·스트레스케어", "항노화·항산화", "생리불순·생리통"],
-            default=["만성피로"],  # 유저 및 자동 테스트 편의를 위해 디폴트 값 매핑
+            default=["만성피로"],
             max_selections=2
         )
         
@@ -299,7 +403,7 @@ def main():
             values = st.multiselect(
                 "20. 구매 시 우선 가치 (최대 2개 선택):",
                 ["성분 함량", "원산지·브랜드", "첨가물 최소화", "복용 편의성"],
-                default=["성분 함량"],  # 디폴트 값 매핑
+                default=["성분 함량"],
                 max_selections=2
             )
             environment = st.radio("21. 복용 환경 선호:", ["거치형·대용량", "휴대형"])
@@ -429,6 +533,7 @@ def main():
         
         survey = st.session_state.survey_data
         
+        # 상단 유저 요약 프로필
         st.markdown(f"""
             <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
                 <strong>📊 분석 대상자 프로필:</strong> {survey['gender']} ({survey['age']}) | BMI: {survey['bmi']} | 
@@ -578,9 +683,14 @@ def main():
                     st.rerun()
             with col_btn_back2:
                 if st.button("🔄 문진 새로 작성하기"):
+                    # 상태 완전 리셋
                     st.session_state.agreed = False
                     st.session_state.step = 1
                     st.session_state.survey_data = {}
+                    st.session_state.all_agree = False
+                    st.session_state.agree_1 = False
+                    st.session_state.agree_2 = False
+                    st.session_state.agree_3 = False
                     st.rerun()
 
 if __name__ == "__main__":
