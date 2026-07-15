@@ -1,11 +1,12 @@
 """
-NutriFit 영양제 추천 스마트 대시보드 MVP (Streamlit - 상대경로 버전)
+NutriFit 영양제 추천 스마트 대시보드 MVP (Streamlit - st.session_state 3단계 분기 정교화 버전)
 
 이 스크립트는 면책 공지 및 필수 개인정보 동의 화면을 시작으로,
 사용자의 인구통계학적 특성, 라이프스타일, 안전성 필터(부작용 및 알레르기), 
 건강 고민 등 23개 전항목 문진을 기반으로 초개인화된 영양제를 추천하는 대시보드 앱입니다.
-수집된 식약처 기능성 원료 API DB(I-0040)와 연계하여 주의사항 및 기능성을 시각화합니다.
-모든 파일 및 데이터 경로는 배포 환경 호환성을 위해 상대 경로로 동적 지정됩니다.
+st.session_state 기반의 3단계(Step) 네비게이션 구조를 적용하여
+성별 동적 분기 및 BMI 실시간 즉시 연산 버그를 st.form 해제를 통해 완벽히 해결했습니다.
+사용자 테스트 편의성을 위해 주요 다중 선택 위젯에 디폴트 값을 제공합니다.
 """
 
 import os
@@ -34,7 +35,6 @@ st.set_page_config(
 )
 
 # 식약처 DB 경로 정의 (상대 경로 적용)
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "0_data", "functional_ingredient_db.json")
 
 @st.cache_data
@@ -98,13 +98,6 @@ def main():
             color: #94a3b8;
             margin-bottom: 30px;
         }
-        .survey-container {
-            background: rgba(30, 41, 59, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-        }
         .product-card {
             background: rgba(30, 41, 59, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -148,15 +141,15 @@ def main():
 
     db_data = load_foodsafety_db()
 
-    # Session State 초기화
+    # Session State 초기화 (st.session_state 기반 3단계 네비게이션 구조 강제)
+    if 'step' not in st.session_state:
+        st.session_state.step = 1
     if 'agreed' not in st.session_state:
         st.session_state.agreed = False
-    if 'survey_completed' not in st.session_state:
-        st.session_state.survey_completed = False
     if 'survey_data' not in st.session_state:
         st.session_state.survey_data = {}
 
-    # ==================== 화면 분기 1: 면책 공지 및 필수 동의 화면 ====================
+    # ==================== 화면 분기 0: 면책 공지 및 필수 동의 화면 ====================
     if not st.session_state.agreed:
         st.subheader("🛡️ 서비스 시작 전 면책 공지 및 개인정보 활용 동의")
         
@@ -174,189 +167,268 @@ def main():
         
         if st.button("동의하고 시작하기", disabled=not (agree_1 and agree_2 and agree_3)):
             st.session_state.agreed = True
+            st.session_state.step = 1
             st.rerun()
             
-    # ==================== 화면 분기 2: STEP 1~5 설문 문진 작성 ====================
-    elif st.session_state.agreed and not st.session_state.survey_completed:
+    # ==================== 화면 분기 1: STEP 1~5 설문 문진 작성 (st.form 해제) ====================
+    elif st.session_state.step == 1:
         st.subheader("📝 웰니스 초개인화 설문 (STEP 1 ~ STEP 5)")
         
-        with st.form("survey_form"):
+        # STEP 1. 기본 정보 (Demographics)
+        st.markdown("### 👤 STEP1. 기본 정보")
+        col_s1_1, col_s1_2 = st.columns(2)
+        with col_s1_1:
+            gender = st.radio("1. 성별:", ["남성", "여성", "응답하지 않음"])
             
-            # STEP 1. 기본 정보 (Demographics)
-            st.markdown("### 👤 STEP1. 기본 정보")
-            col_s1_1, col_s1_2 = st.columns(2)
-            with col_s1_1:
-                gender = st.radio("1. 성별:", ["남성", "여성", "응답하지 않음"])
-                
-                # 남성 전용 질문
-                male_worries = []
-                if gender == "남성":
-                    male_worries = st.multiselect(
-                        "2. [남성 전용] 고민 영역 (복수선택):",
-                        ["탈모·두피 관리", "전립선 건강", "근육량 증가"]
-                    )
-                
-                # 여성 전용 질문
-                female_lifecycle = "해당없음"
-                if gender == "여성":
-                    female_lifecycle = st.selectbox(
-                        "3. [여성 전용] 생애주기 상태:",
-                        ["해당없음", "임신 준비 중", "임신 중", "수유 중", "폐경기"]
-                    )
-            
-            with col_s1_2:
-                age = st.selectbox(
-                    "4. 연령대:",
-                    ["20대 미만", "20대", "30대", "40대", "50대", "60대 이상"]
-                )
-                height = st.number_input("5-1. 키 (cm):", min_value=100.0, max_value=250.0, value=170.0, step=0.1)
-                weight = st.number_input("5-2. 몸무게 (kg):", min_value=30.0, max_value=200.0, value=65.0, step=0.1)
-                
-                # BMI 실시간 자동 연산
-                bmi = round(weight / ((height / 100.0) ** 2), 2)
-                bmi_status = "정상"
-                if bmi < 18.5:
-                    bmi_status = "저체중"
-                elif 18.5 <= bmi < 23.0:
-                    bmi_status = "정상"
-                elif 23.0 <= bmi < 25.0:
-                    bmi_status = "과체중"
-                else:
-                    bmi_status = "비만"
-                st.markdown(f"**💡 자동 계산된 BMI:** `{bmi}` (분류: `{bmi_status}`)")
-
-            # STEP 2. 라이프스타일 & 일상 습관 (Lifestyle)
-            st.markdown("---")
-            st.markdown("### 🏃 STEP2. 라이프스타일 & 일상 습관")
-            col_s2_1, col_s2_2 = st.columns(2)
-            with col_s2_1:
-                exercise = st.multiselect(
-                    "6. 운동 종류 및 목적 (복수선택):",
-                    ["안 함·체력유지재활", "고강도 유산소", "저항성·근력 운동", "유연성·코어", "고강도 인터벌"]
-                )
-                drinking = st.selectbox("7. 음주 빈도:", ["전혀 안 함", "보통", "잦은 음주"])
-                caffeine = st.selectbox("8. 하루 카페인 섭취:", ["0잔", "1~2잔", "3잔", "4잔 이상"])
-            
-            with col_s2_2:
-                diet = st.selectbox(
-                    "9. 식습관:",
-                    ["일반식·불규칙", "육식 위주", "채식·간헐적 단식", "완벽한 비건"]
-                )
-                sleep = st.selectbox("10. 수면 시간:", ["5시간 미만", "5~7시간", "8시간 이상"])
-                stress = st.select_slider(
-                    "11. 스트레스 자가인지:",
-                    options=["1단계", "2단계", "3단계", "4단계", "5단계"],
-                    value="3단계"
-                )
-
-            # STEP 3. 건강 상태 & 안전성 필터 (Medical & Safety) ★필수 민감정보
-            st.markdown("---")
-            st.markdown("### 🛡️ STEP3. 건강 상태 & 안전성 필터 (민감 정보)")
-            col_s3_1, col_s3_2 = st.columns(2)
-            with col_s3_1:
-                smoking = st.radio("12. 흡연 여부:", ["비흡연", "흡연"])
-                allergies = st.multiselect(
-                    "13. 알레르기 원료 (복수선택):",
-                    ["갑각류", "대두", "글루텐", "유제품", "견과류", "어류", "없음"]
+            # 성별 변경에 따라 화면이 즉각적으로 트리거됨
+            male_worries = []
+            if gender == "남성":
+                male_worries = st.multiselect(
+                    "2. [남성 전용] 고민 영역 (복수선택):",
+                    ["탈모·두피 관리", "전립선 건강", "근육량 증가"]
                 )
             
-            with col_s3_2:
-                side_effects = st.multiselect(
-                    "14. 과거 부작용 경험 성분 (복수선택):",
-                    ["철분", "오메가3", "비타민C", "유산균", "기타 직접입력"]
+            female_lifecycle = "해당없음"
+            if gender == "여성":
+                female_lifecycle = st.selectbox(
+                    "3. [여성 전용] 생애주기 상태:",
+                    ["해당없음", "임신 준비 중", "임신 중", "수유 중", "폐경기"]
                 )
-                side_effect_direct = ""
-                if "기타 직접입력" in side_effects:
-                    side_effect_direct = st.text_input("14-1. 부작용 성분 직접 입력 (쉼표 구분 가능):")
-                
-                diseases = st.multiselect(
-                    "15. 지병 및 복용 약물 (복수선택):",
-                    ["고혈압", "당뇨", "이상지질혈증", "만성 위장질환", "혈전 관련질환-항응고제", "간·신장질환", "없음·기타"]
-                )
-
-            # STEP 4. 건강 고민 및 목표 (Health Goals)
-            st.markdown("---")
-            st.markdown("### 🎯 STEP4. 건강 고민 및 목표")
-            health_goals = st.multiselect(
-                "16. 건강 고민 및 목표 (최대 2개 선택):",
-                ["만성피로", "눈 건조·피로", "장 건강", "피부탄력·이너뷰티", "체지방감소·다이어트", "면역력저하", "관절보호", "수면부족·스트레스케어", "항노화·항산화", "생리불순·생리통"]
+        
+        with col_s1_2:
+            age = st.selectbox(
+                "4. 연령대:",
+                ["20대 미만", "20대", "30대", "40대", "50대", "60대 이상"]
             )
+            height = st.number_input("5-1. 키 (cm):", min_value=100.0, max_value=250.0, value=170.0, step=0.1)
+            weight = st.number_input("5-2. 몸무게 (kg):", min_value=30.0, max_value=200.0, value=65.0, step=0.1)
             
-            # STEP 5. 섭취 편의성 및 구매 성향 (Preference)
-            st.markdown("---")
-            st.markdown("### 🛍️ STEP5. 섭취 편의성 및 구매 성향")
-            col_s5_1, col_s5_2 = st.columns(2)
-            with col_s5_1:
-                pill_discomfort = st.radio("17. 알약 불편감:", ["상관없음", "매우 불편함"])
-                alternative_form = st.selectbox(
-                    "18. 대안 제형 선호:",
-                    ["소형 알약", "구미·젤리", "액상·드링크", "분말·포"]
-                )
-                pref_form = st.selectbox("19. 선호하는 영양제 형태:", ["젤리", "구미", "액상", "분말"])
-                buy_method = st.selectbox("23. 구매 방식 선호:", ["정기구독", "1회구매", "상관없음"])
-            
-            with col_s5_2:
-                values = st.multiselect(
-                    "20. 구매 시 우선 가치 (최대 2개 선택):",
-                    ["성분 함량", "원산지·브랜드", "첨가물 최소화", "복용 편의성"]
-                )
-                environment = st.radio("21. 복용 환경 선호:", ["거치형·대용량", "휴대형"])
-                budget = st.selectbox(
-                    "22. 월 예산대:",
-                    ["1~3만원", "3~5만원", "5~10만원", "10만원 이상"]
-                )
+            # 실시간 BMI 즉시 자동 연산
+            bmi = round(weight / ((height / 100.0) ** 2), 2)
+            bmi_status = "정상"
+            if bmi < 18.5:
+                bmi_status = "저체중"
+            elif 18.5 <= bmi < 23.0:
+                bmi_status = "정상"
+            elif 23.0 <= bmi < 25.0:
+                bmi_status = "과체중"
+            else:
+                bmi_status = "비만"
+            st.markdown(f"""
+                <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; padding: 10px; margin-top: 10px;">
+                    💡 <strong>실시간 BMI 지수:</strong> <span style="color: #3b82f6; font-weight: bold;">{bmi}</span> (분류: <strong>{bmi_status}</strong>)
+                </div>
+            """, unsafe_allow_html=True)
 
-            # 건강 목표 및 우선가치 개수 유효성 검증
-            goals_ok = len(health_goals) <= 2
-            values_ok = len(values) <= 2
-            
-            if not goals_ok:
-                st.warning("⚠️ **STEP4 건강고민**은 최대 2개까지만 선택이 가능합니다.")
-            if not values_ok:
-                st.warning("⚠️ **STEP5 구매 가치**는 최대 2개까지만 선택이 가능합니다.")
+        # STEP 2. 라이프스타일 & 일상 습관 (Lifestyle)
+        st.markdown("---")
+        st.markdown("### 🏃 STEP2. 라이프스타일 & 일상 습관")
+        col_s2_1, col_s2_2 = st.columns(2)
+        with col_s2_1:
+            exercise = st.multiselect(
+                "6. 운동 종류 및 목적 (복수선택):",
+                ["안 함·체력유지재활", "고강도 유산소", "저항성·근력 운동", "유연성·코어", "고강도 인터벌"],
+                default=["안 함·체력유지재활"]
+            )
+            drinking = st.selectbox("7. 음주 빈도:", ["전혀 안 함", "보통", "잦은 음주"])
+            caffeine = st.selectbox("8. 하루 카페인 섭취:", ["0잔", "1~2잔", "3잔", "4잔 이상"])
+        
+        with col_s2_2:
+            diet = st.selectbox(
+                "9. 식습관:",
+                ["일반식·불규칙", "육식 위주", "채식·간헐적 단식", "완벽한 비건"]
+            )
+            sleep = st.selectbox("10. 수면 시간:", ["5시간 미만", "5~7시간", "8시간 이상"])
+            stress = st.select_slider(
+                "11. 스트레스 자가인지:",
+                options=["1단계", "2단계", "3단계", "4단계", "5단계"],
+                value="3단계"
+            )
 
-            submit_btn = st.form_submit_button("초개인화 영양제 추천 분석", disabled=not (goals_ok and values_ok and len(health_goals) > 0))
+        # STEP 3. 건강 상태 & 안전성 필터 (Medical & Safety) ★필수 민감정보
+        st.markdown("---")
+        st.markdown("### 🛡️ STEP3. 건강 상태 & 안전성 필터 (민감 정보)")
+        col_s3_1, col_s3_2 = st.columns(2)
+        with col_s3_1:
+            smoking = st.radio("12. 흡연 여부:", ["비흡연", "흡연"])
+            allergies = st.multiselect(
+                "13. 알레르기 원료 (복수선택):",
+                ["갑각류", "대두", "글루텐", "유제품", "견과류", "어류", "없음"],
+                default=["없음"]
+            )
+        
+        with col_s3_2:
+            side_effects = st.multiselect(
+                "14. 과거 부작용 경험 성분 (복수선택):",
+                ["철분", "오메가3", "비타민C", "유산균", "기타 직접입력"]
+            )
+            side_effect_direct = ""
+            if "기타 직접입력" in side_effects:
+                side_effect_direct = st.text_input("14-1. 부작용 성분 직접 입력 (쉼표 구분 가능):")
             
-            if submit_btn:
-                # 유저 입력값 데이터화
-                st.session_state.survey_data = {
-                    "gender": gender,
-                    "male_worries": male_worries,
-                    "female_lifecycle": female_lifecycle,
-                    "age": age,
-                    "height": height,
-                    "weight": weight,
-                    "bmi": bmi,
-                    "exercise": exercise,
-                    "drinking": drinking,
-                    "caffeine": caffeine,
-                    "diet": diet,
-                    "sleep": sleep,
-                    "stress": stress,
-                    "smoking": smoking,
-                    "allergies": allergies,
-                    "side_effects": side_effects,
-                    "side_effect_direct": side_effect_direct,
-                    "diseases": diseases,
-                    "health_goals": health_goals,
-                    "pill_discomfort": pill_discomfort,
-                    "alternative_form": alternative_form,
-                    "pref_form": pref_form,
-                    "values": values,
-                    "environment": environment,
-                    "budget": budget,
-                    "buy_method": buy_method
-                }
-                st.session_state.survey_completed = True
+            diseases = st.multiselect(
+                "15. 지병 및 복용 약물 (복수선택):",
+                ["고혈압", "당뇨", "이상지질혈증", "만성 위장질환", "혈전 관련질환-항응고제", "간·신장질환", "없음·기타"],
+                default=["없음·기타"]
+            )
+
+        # STEP 4. 건강 고민 및 목표 (Health Goals)
+        st.markdown("---")
+        st.markdown("### 🎯 STEP4. 건강 고민 및 목표")
+        health_goals = st.multiselect(
+            "16. 건강 고민 및 목표 (최대 2개 선택):",
+            ["만성피로", "눈 건조·피로", "장 건강", "피부탄력·이너뷰티", "체지방감소·다이어트", "면역력저하", "관절보호", "수면부족·스트레스케어", "항노화·항산화", "생리불순·생리통"],
+            default=["만성피로"],  # 유저 및 자동 테스트 편의를 위해 디폴트 값 매핑
+            max_selections=2
+        )
+        
+        # STEP 5. 섭취 편의성 및 구매 성향 (Preference)
+        st.markdown("---")
+        st.markdown("### 🛍️ STEP5. 섭취 편의성 및 구매 성향")
+        col_s5_1, col_s5_2 = st.columns(2)
+        with col_s5_1:
+            pill_discomfort = st.radio("17. 알약 불편감:", ["상관없음", "매우 불편함"])
+            alternative_form = st.selectbox(
+                "18. 대안 제형 선호:",
+                ["소형 알약", "구미·젤리", "액상·드링크", "분말·포"]
+            )
+            pref_form = st.selectbox("19. 선호하는 영양제 형태:", ["젤리", "구미", "액상", "분말"])
+            buy_method = st.selectbox("23. 구매 방식 선호:", ["정기구독", "1회구매", "상관없음"])
+        
+        with col_s5_2:
+            values = st.multiselect(
+                "20. 구매 시 우선 가치 (최대 2개 선택):",
+                ["성분 함량", "원산지·브랜드", "첨가물 최소화", "복용 편의성"],
+                default=["성분 함량"],  # 디폴트 값 매핑
+                max_selections=2
+            )
+            environment = st.radio("21. 복용 환경 선호:", ["거치형·대용량", "휴대형"])
+            budget = st.selectbox(
+                "22. 월 예산대:",
+                ["1~3만원", "3~5만원", "5~10만원", "10만원 이상"]
+            )
+
+        st.markdown("---")
+        
+        goals_ok = len(health_goals) > 0
+        if not goals_ok:
+            st.info("💡 진단 및 웰니스 분석을 진행하려면 **STEP4. 건강 고민 및 목표**를 최소 1개 선택해 주세요.")
+
+        # 진단 및 단계 전환 버튼
+        if st.button("진단 및 맞춤 스코어 확인하기 ➡️", disabled=not goals_ok):
+            st.session_state.survey_data = {
+                "gender": gender,
+                "male_worries": male_worries,
+                "female_lifecycle": female_lifecycle,
+                "age": age,
+                "height": height,
+                "weight": weight,
+                "bmi": bmi,
+                "exercise": exercise,
+                "drinking": drinking,
+                "caffeine": caffeine,
+                "diet": diet,
+                "sleep": sleep,
+                "stress": stress,
+                "smoking": smoking,
+                "allergies": allergies,
+                "side_effects": side_effects,
+                "side_effect_direct": side_effect_direct,
+                "diseases": diseases,
+                "health_goals": health_goals,
+                "pill_discomfort": pill_discomfort,
+                "alternative_form": alternative_form,
+                "pref_form": pref_form,
+                "values": values,
+                "environment": environment,
+                "budget": budget,
+                "buy_method": buy_method
+            }
+            st.session_state.step = 2
+            st.rerun()
+
+    # ==================== 화면 분기 2: 웰니스 스코어보드 결과 화면 ====================
+    elif st.session_state.step == 2:
+        st.subheader("📊 웰니스 스코어 분석 결과 리포트 (Step 2)")
+        survey = st.session_state.survey_data
+        
+        try:
+            from src.engine.scoring import calculate_wellness_bonus
+        except ModuleNotFoundError:
+            from project2_team3.src.engine.scoring import calculate_wellness_bonus
+            
+        bonuses = calculate_wellness_bonus(survey)
+        
+        st.markdown("### 🧬 내 몸에 필요한 6대 핵심 영양제 가산점 현황")
+        st.write("유저의 일상 라이프스타일, 기본 정보 및 주요 건강 고민을 복합 분석하여 산출된 각 원료 성분별 보너스 스코어입니다.")
+        
+        col_b1, col_b2, col_b3 = st.columns(3)
+        cols = [col_b1, col_b2, col_b3]
+        
+        keys = list(bonuses.keys())
+        for idx, key in enumerate(keys):
+            col = cols[idx % 3]
+            score = bonuses[key]
+            
+            comment = "기본 섭취 권장"
+            if score >= 8.0:
+                comment = "🚨 매우 필요 (집중 섭취 추천)"
+            elif score >= 4.0:
+                comment = "⭐ 적극 권장 (맞춤 매칭)"
+                
+            col.markdown(f"""
+                <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 18px; margin-bottom: 15px;">
+                    <span style="font-size: 0.85rem; color: #94a3b8;">영양소 성분</span>
+                    <h4 style="margin: 2px 0 6px 0; color: #f8fafc;">{key}</h4>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 1.8rem; font-weight: 800; color: #10b981;">+{score}</span>
+                        <span style="font-size: 0.8rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 5px;">{comment}</span>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+        st.markdown("---")
+        
+        st.markdown("### 🛡️ 개인 맞춤형 안전성 필터 동작 리포트")
+        banned_list = list(survey.get("side_effects", []))
+        direct_banned = survey.get("side_effect_direct", "").strip()
+        if direct_banned:
+            banned_list.append(direct_banned)
+        banned_list = [b for b in banned_list if b != "기타 직접입력"]
+        
+        col_f1, col_f2 = st.columns(2)
+        with col_f1:
+            st.markdown("#### 🚫 부작용 배제 필터")
+            if banned_list:
+                st.error(f"다음 성분들이 함유된 영양제 제품군은 추천 리스트에서 **원천 배제(Hard Filter)** 처리되었습니다:\n\n`{', '.join(banned_list)}`")
+            else:
+                st.success("부작용 배제 성분이 설정되지 않았습니다. 모든 맞춤 영양제를 정상 매칭합니다.")
+        with col_f2:
+            st.markdown("#### 🌾 알레르기 및 주의 원료")
+            allergies = survey.get("allergies", [])
+            if allergies and "없음" not in allergies:
+                st.warning(f"섭취 시 원재료 확인 필요 알레르기 유발 의심 원료:\n\n`{', '.join(allergies)}`")
+            else:
+                st.success("알레르기 필터가 적용되지 않았습니다.")
+                
+        st.markdown("---")
+        
+        col_btn1, col_btn2 = st.columns(2)
+        with col_btn1:
+            if st.button("⬅️ 이전 단계 (문진 수정)"):
+                st.session_state.step = 1
+                st.rerun()
+        with col_btn2:
+            if st.button("초개인화 장바구니 큐레이션 보기 ➡️"):
+                st.session_state.step = 3
                 st.rerun()
 
-    # ==================== 화면 분기 3: 문진 분석 결과 및 큐레이션 ====================
-    elif st.session_state.survey_completed:
-        st.subheader("💡 뉴트리핏 초개인화 맞춤 큐레이션 결과")
+    # ==================== 화면 분기 3: 초개인화 장바구니 큐레이션 결과 ====================
+    elif st.session_state.step == 3:
+        st.subheader("💡 뉴트리핏 초개인화 맞춤 큐레이션 결과 (Step 3)")
         
         survey = st.session_state.survey_data
         
-        # 상단 유저 요약 프로필
         st.markdown(f"""
             <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
                 <strong>📊 분석 대상자 프로필:</strong> {survey['gender']} ({survey['age']}) | BMI: {survey['bmi']} | 
@@ -380,14 +452,14 @@ def main():
         except Exception as e:
             st.error(f"추천 엔진 구동 중 에러가 발생했습니다: {e}")
             if st.button("돌아가기"):
-                st.session_state.survey_completed = False
+                st.session_state.step = 2
                 st.rerun()
             return
 
         if recommendations.empty:
             st.warning("⚠️ 입력하신 부작용 성분 필터 또는 맞춤 가중치 조건에 해당하는 제품이 목록에 존재하지 않거나 모두 필터링되었습니다.")
-            if st.button("문진 다시 하기"):
-                st.session_state.survey_completed = False
+            if st.button("⬅️ 웰니스 리포트로 돌아가기"):
+                st.session_state.step = 2
                 st.rerun()
             return
 
@@ -498,9 +570,18 @@ def main():
                         st.warning(info['precautions'])
             
             st.markdown("---")
-            if st.button("🔄 문진 새로 작성하기"):
-                st.session_state.survey_completed = False
-                st.rerun()
+            
+            col_btn_back1, col_btn_back2 = st.columns(2)
+            with col_btn_back1:
+                if st.button("⬅️ 이전 단계 (웰니스 리포트)"):
+                    st.session_state.step = 2
+                    st.rerun()
+            with col_btn_back2:
+                if st.button("🔄 문진 새로 작성하기"):
+                    st.session_state.agreed = False
+                    st.session_state.step = 1
+                    st.session_state.survey_data = {}
+                    st.rerun()
 
 if __name__ == "__main__":
     main()
