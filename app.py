@@ -1025,54 +1025,49 @@ def main():
             night_list = []
             
             if "유산균" in all_std_ings or "프로바이오틱스" in all_std_ings:
-                morning_list.append("🥛 **유산균/프로바이오틱스** (공복 복용 시 위산 영향을 줄여 장 도달률이 가장 극대화됩니다.)")
+                morning_list.append("🥛 <strong>유산균/프로바이오틱스</strong><br><span style='color: #94a3b8; font-size: 0.8rem;'>공복 복용 시 위산 영향을 줄여 장 도달률이 가장 극대화됩니다.</span>")
             if "비타민C" in all_std_ings:
-                lunch_list.append("🍊 **비타민C** (공복 속쓰림 방지 및 식후 지용성 성분과의 흡수율 시너지 매치)")
+                lunch_list.append("🍊 <strong>비타민C</strong><br><span style='color: #94a3b8; font-size: 0.8rem;'>공복 속쓰림 방지 및 식후 지용성 성분과의 흡수율 시너지 매치</span>")
             if "멀티비타민" in all_std_ings or "비타민" in all_std_ings:
-                lunch_list.append("🍇 **멀티비타민** (식후 지용성 비타민 흡수 증진 및 낮 시간 에너지 대사 촉진)")
+                lunch_list.append("🍇 <strong>멀티비타민</strong><br><span style='color: #94a3b8; font-size: 0.8rem;'>식후 지용성 비타민 흡수 증진 및 낮 시간 에너지 대사 촉진</span>")
             if "오메가3" in all_std_ings:
-                lunch_list.append("🐟 **오메가3** (식후 담즙산 분비 시 복용해야 지용성 오일의 흡수율이 대폭 상승합니다.)")
+                lunch_list.append("🐟 <strong>오메가3</strong><br><span style='color: #94a3b8; font-size: 0.8rem;'>식후 담즙산 분비 시 복용해야 지용성 오일의 흡수율이 대폭 상승합니다.</span>")
             if "마그네슘" in all_std_ings:
-                night_list.append("🥑 **마그네슘** (신경 안정 및 근육 이완을 도와 밤 시간 편안한 숙면을 유도합니다.)")
+                night_list.append("🥑 <strong>마그네슘</strong><br><span style='color: #94a3b8; font-size: 0.8rem;'>신경 안정 및 근육 이완을 도와 밤 시간 편안한 숙면을 유도합니다.</span>")
             if "콜라겐" in all_std_ings:
-                night_list.append("🎀 **콜라겐** (야간 취침 시 이루어지는 피부 세포 재생 주기에 최적 매핑)")
+                night_list.append("🎀 <strong>콜라겐</strong><br><span style='color: #94a3b8; font-size: 0.8rem;'>야간 취침 시 이루어지는 피부 세포 재생 주기에 최적 매핑</span>")
                 
             col_t1, col_t2, col_t3 = st.columns(3)
-            with col_t1:
-                st.markdown("""
-                    <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px; padding: 18px; min-height: 200px;">
-                        <h5 style="margin: 0 0 10px 0; color: #60a5fa;">🌅 아침 기상 공복 (08:00)</h5>
-                """, unsafe_allow_html=True)
-                if morning_list:
-                    for m in morning_list:
-                        st.write(m)
-                else:
-                    st.write("아침 공복 추천 복용 성분이 없습니다.")
-                st.markdown("</div>", unsafe_allow_html=True)
-                
-            with col_t2:
-                st.markdown("""
-                    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 18px; min-height: 200px;">
-                        <h5 style="margin: 0 0 10px 0; color: #34d399;">☀️ 점심/오후 식후 (13:00)</h5>
-                """, unsafe_allow_html=True)
-                if lunch_list:
-                    for l in lunch_list:
-                        st.write(l)
-                else:
-                    st.write("낮/점심 식후 추천 복용 성분이 없습니다.")
-                st.markdown("</div>", unsafe_allow_html=True)
-                
-            with col_t3:
-                st.markdown("""
-                    <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; padding: 18px; min-height: 200px;">
-                        <h5 style="margin: 0 0 10px 0; color: #fbbf24;">🌙 저녁 취침 전 (22:00)</h5>
-                """, unsafe_allow_html=True)
-                if night_list:
-                    for n in night_list:
-                        st.write(n)
-                else:
-                    st.write("저녁 취침 전 추천 복용 성분이 없습니다.")
-                st.markdown("</div>", unsafe_allow_html=True)
+            
+            # 아침 공복 바인딩
+            morning_content = "<br><br>".join(morning_list) if morning_list else "속 편한 아침 🟢<br><span style='color: #94a3b8; font-size: 0.8rem;'>(이 시간대에는 영양제 없이 따뜻한 물 한 잔으로 시작하세요!)</span>"
+            morning_html = f"""
+                <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px; padding: 18px; min-height: 200px; color: #e2e8f0; line-height: 1.5; font-size: 0.88rem;">
+                    <h5 style="margin: 0 0 12px 0; color: #60a5fa; font-size: 1rem; font-weight: 700;">🌅 아침 기상 공복 (08:00)</h5>
+                    {morning_content}
+                </div>
+            """
+            col_t1.markdown(morning_html, unsafe_allow_html=True)
+            
+            # 점심 식후 바인딩
+            lunch_content = "<br><br>".join(lunch_list) if lunch_list else "활기찬 하루 ☀️<br><span style='color: #94a3b8; font-size: 0.8rem;'>(현재 시간대 추천 제품이 없습니다. 수분 보충을 충분히 해주세요!)</span>"
+            lunch_html = f"""
+                <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 18px; min-height: 200px; color: #e2e8f0; line-height: 1.5; font-size: 0.88rem;">
+                    <h5 style="margin: 0 0 12px 0; color: #34d399; font-size: 1rem; font-weight: 700;">☀️ 점심/오후 식후 (13:00)</h5>
+                    {lunch_content}
+                </div>
+            """
+            col_t2.markdown(lunch_html, unsafe_allow_html=True)
+            
+            # 저녁 취침 전 바인딩
+            night_content = "<br><br>".join(night_list) if night_list else "편안한 휴식 🌙<br><span style='color: #94a3b8; font-size: 0.8rem;'>(오늘의 영양제 섭취가 완료되었습니다. 숙면을 취하세요!)</span>"
+            night_html = f"""
+                <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; padding: 18px; min-height: 200px; color: #e2e8f0; line-height: 1.5; font-size: 0.88rem;">
+                    <h5 style="margin: 0 0 12px 0; color: #fbbf24; font-size: 1rem; font-weight: 700;">🌙 저녁 취침 전 (22:00)</h5>
+                    {night_content}
+                </div>
+            """
+            col_t3.markdown(night_html, unsafe_allow_html=True)
 
             # -------------------- 식약처 정밀 성분 분석 가이드 (하단에 단독 전체 폭 렌더링) --------------------
             st.markdown("---")
