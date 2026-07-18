@@ -4,3 +4,4 @@ pyarrow
 numpy
 openpyxl
 scikit-learn
+reportlab
