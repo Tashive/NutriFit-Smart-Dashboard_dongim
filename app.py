@@ -539,21 +539,16 @@ def main():
                 # 우측: 미니 대시보드 Mock-up (글래스모피즘)
                 st.markdown("""
                     <div style="background: rgba(30, 41, 59, 0.45); border: 2px solid rgba(59, 130, 246, 0.25); border-radius: 20px; padding: 22px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); min-height: 480px; backdrop-filter: blur(10px);">
-                        <!-- 상단: ML 커널 액티브 라벨 -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 12px;">
-                            <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 700; font-family: 'Outfit';">💻 NutriFit Core v2.5</span>
+                            <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 700; font-family: 'Outfit';">&#128187; NutriFit Core v2.5</span>
                             <span style="font-size: 0.78rem; color: #34d399; background: rgba(16, 185, 129, 0.15); padding: 3px 10px; border-radius: 20px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
                                 <span style="display: inline-block; width: 6px; height: 6px; background: #10b981; border-radius: 50%;"></span>
-                                🤖 NutriFit ML Kernel Active
+                                &#129302; NutriFit ML Kernel Active
                             </span>
                         </div>
-                        
-                        <!-- 중단 1: 가상 경고 바 -->
                         <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; padding: 12px; margin-bottom: 18px; font-size: 0.82rem; color: #fca5a5; line-height: 1.4;">
-                            ⚠️ <strong>주의: 비타민D 과다 섭취 위험!</strong> (상한치 대비 125% 초과 감지)
+                            &#9888;&#65039; <strong>주의: 비타민D 과다 섭취 위험!</strong> (상한치 대비 125% 초과 감지)
                         </div>
-                        
-                        <!-- 중단 2: 미니 카드 2개 -->
                         <div style="display: flex; gap: 12px; margin-bottom: 18px;">
                             <div style="flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px;">
                                 <span style="font-size: 0.65rem; color: #60a5fa; background: rgba(59, 130, 246, 0.12); padding: 1px 5px; border-radius: 4px;">만성피로</span>
@@ -566,17 +561,15 @@ def main():
                                 <span style="font-size: 0.8rem; color: #10b981; font-weight: 700;">+15.33점</span>
                             </div>
                         </div>
-                        
-                        <!-- 하단: 미니 타임라인 가이드 -->
                         <div style="background: rgba(0,0,0,0.15); border-radius: 10px; padding: 15px; border: 1px solid rgba(255,255,255,0.04);">
-                            <div style="font-size: 0.8rem; color: #94a3b8; font-weight: 700; margin-bottom: 10px;">⏰ AI 복용 타임라인 프리뷰</div>
+                            <div style="font-size: 0.8rem; color: #94a3b8; font-weight: 700; margin-bottom: 10px;">&#9200; AI 복용 타임라인 프리뷰</div>
                             <div style="display: flex; flex-direction: column; gap: 8px;">
                                 <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.02); padding: 6px 10px; border-radius: 6px; font-size: 0.78rem;">
-                                    <span style="color: #60a5fa;">🌅 08:00</span>
+                                    <span style="color: #60a5fa;">&#127749; 08:00</span>
                                     <span style="color: #e2e8f0;">유산균 (공복 흡수 극대화)</span>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.02); padding: 6px 10px; border-radius: 6px; font-size: 0.78rem;">
-                                    <span style="color: #34d399;">☀️ 13:00</span>
+                                    <span style="color: #34d399;">&#9728;&#65039; 13:00</span>
                                     <span style="color: #e2e8f0;">오메가3 / 멀티비타민 (식후 흡수)</span>
                                 </div>
                             </div>
@@ -863,6 +856,11 @@ def main():
             with col_board_left:
                 st.markdown("### 🧬 내 몸에 필요한 6대 핵심 영양제 가산점 현황")
                 st.write("유저의 일상 라이프스타일, 기본 정보 및 주요 건강 고민(최대 3개)에 대한 스코어 분배율을 복합 분석하여 산출된 보너스 스코어입니다.")
+                st.markdown("""
+                    <div style="background: rgba(59, 130, 246, 0.07); border-left: 3px solid rgba(59, 130, 246, 0.5); border-radius: 6px; padding: 8px 14px; margin-bottom: 12px; font-size: 0.82rem; color: #94a3b8; line-height: 1.55;">
+                        ※ 전체 제품 추천 랭킹은 <strong style="color: #60a5fa;">10점 만점 기준</strong>으로 정렬되며, 유저의 3대 핵심 건강 고민 매칭 결과에 따라 성분별로 최대 <strong style="color: #34d399;">+2.50점</strong>의 동적 가산점(보너스 스코어)이 부여된 현황입니다.
+                    </div>
+                """, unsafe_allow_html=True)
                 
                 col_b1, col_b2, col_b3 = st.columns(3)
                 cols = [col_b1, col_b2, col_b3]
