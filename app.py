@@ -1,12 +1,11 @@
 """
-NutriFit 영양제 추천 스마트 대시보드 MVP (Streamlit - 백오피스 관리자 모드 보안 스위치 도입 버전)
+NutriFit 영양제 추천 스마트 대시보드 MVP (Streamlit - 프리미엄 카드 Grid UI 및 ML 시뮬레이터 장착 버전)
 
 이 스크립트는 면책 공지 및 필수 개인정보 동의 화면을 시작으로,
 사용자의 인구통계학적 특성, 라이프스타일, 안전성 필터(부작용 및 알레르기), 
 건강 고민 등 23개 전항목 문진을 기반으로 초개인화된 영양제를 추천하는 대시보드 앱입니다.
-사이드바 하단에 관리자 모드 토글 스위치(st.sidebar.checkbox)를 배치하고,
-체크박스 활성화 여부에 따라 동적 메뉴 분기 및 백오피스 데이터 모니터링 시스템을 렌더링합니다.
-들여쓰기(Indentation) 구조를 보완하여 메뉴 분기 간 화면 간섭을 원천 차단했습니다.
+상용 이커머스 스타일의 4열 프리미엄 카드 Grid UI(호버 모션, Fallback 플레이스홀더 이미지 포함)와
+백오피스 내 관리자 전용 'NutriFit 예측 ML 엔진 시뮬레이터'를 실시간 탑재했습니다.
 """
 
 import os
@@ -145,40 +144,56 @@ def main():
             color: #94a3b8;
             margin-bottom: 5px;
         }
-        .product-card {
-            background: rgba(30, 41, 59, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .product-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-        .score-badge {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: inline-block;
-        }
         .rating-star {
             color: #fbbf24;
             font-weight: bold;
             font-size: 1.1rem;
         }
-        .platform-badge {
-            background: #334155;
-            color: #cbd5e1;
-            padding: 2px 8px;
+        .ecommerce-card {
+            background: rgba(30, 41, 59, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 24px;
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 570px;
+        }
+        .ecommerce-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 35px rgba(16, 185, 129, 0.18);
+            border-color: rgba(16, 185, 129, 0.45);
+        }
+        .card-badge {
+            font-size: 0.7rem;
+            padding: 3px 7px;
             border-radius: 5px;
-            font-size: 0.75rem;
-            font-weight: 500;
+            font-weight: 600;
+            margin-right: 4px;
+            display: inline-block;
+        }
+        .badge-goal { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+        .badge-platform { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .badge-form { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        
+        .buy-btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white !important;
+            padding: 10px 0;
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 0.88rem;
+            transition: opacity 0.2s;
+            margin-top: 10px;
+        }
+        .buy-btn:hover {
+            opacity: 0.9;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -690,7 +705,7 @@ def main():
             filter_cat = None if selected_category == "전체 맞춤 추천" else selected_category
 
             try:
-                recommendations = get_recommendations(survey, selected_category=filter_cat, top_n=10)
+                recommendations = get_recommendations(survey, selected_category=filter_cat, top_n=12)
             except Exception as e:
                 st.error(f"추천 엔진 구동 중 에러가 발생했습니다: {e}")
                 if st.button("돌아가기"):
@@ -720,66 +735,103 @@ def main():
             selected_idx = product_options.index(selected_product_label)
             selected_row = recommendations.iloc[selected_idx]
 
-            col1, col2 = st.columns([1.2, 1.0], gap="large")
-
-            with col1:
-                st.markdown(f"### 🏆 큐레이션 추천 랭킹 TOP {len(recommendations)}")
-                
-                for i, (idx, row) in enumerate(recommendations.iterrows()):
-                    platform = str(row.get('platform') or 'Unknown')
-                    name = str(row.get('product_name') or row.get('displayName') or '이름 없음')
-                    brand = str(row.get('brandName') or row.get('brand') or '브랜드 정보 없음')
-                    rating = row.get('rating', 0.0)
-                    reviews = int(row.get('review_count', 0))
-                    score = row['score']
-                    std_ing = str(row.get('표준성분', ''))
-                    bonus = row.get('wellness_bonus', 0.0)
-
-                    if idx == selected_row.name:
-                        card_style = "border: 2px solid #10b981; background: rgba(16, 185, 129, 0.12); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);"
-                        rank_prefix = f"🔥 {i+1}위 (선택됨)"
-                    else:
-                        card_style = ""
-                        rank_prefix = f"{i+1}위"
-
-                    st.markdown(f"""
-                        <div class="product-card" style="{card_style}">
-                            <div style="display: flex; justify-content: space-between; align-items: start;">
-                                <div>
-                                    <span style="font-weight: 800; color: #10b981; font-size: 1.05rem;">{rank_prefix}</span>
-                                    <span class="platform-badge" style="margin-left: 8px;">{platform}</span>
-                                    <span style="font-size: 0.85rem; color: #94a3b8; margin-left: 8px;">{brand}</span>
-                                    <h4 style="margin: 8px 0 4px 0; color: #f8fafc; font-size: 1rem;">{name}</h4>
-                                    <span style="font-size: 0.85rem; color: #38bdf8;">🧬 표준성분: {std_ing}</span>
-                                    <div style="margin-top: 4px; font-size: 0.8rem; color: #a7f3d0;">💡 웰니스 맞춤 가산점: +{bonus:.2f}점</div>
-                                </div>
-                                <div style="text-align: right;">
-                                    <span class="score-badge">★ {score}</span>
-                                    <div style="margin-top: 5px;">
-                                        <span class="rating-star">⭐ {rating:.1f}</span>
-                                        <span style="font-size: 0.8rem; color: #64748b;">({reviews:,} reviews)</span>
+            # -------------------- 상용 이커머스 Grid UI 렌더링 (st.columns(4)) --------------------
+            st.markdown("### 🏆 큐레이션 추천 랭킹 TOP 12")
+            recommendations_count = len(recommendations)
+            rows_needed = (recommendations_count + 3) // 4
+            
+            for r in range(rows_needed):
+                cols = st.columns(4)
+                for c in range(4):
+                    idx_in_rec = r * 4 + c
+                    if idx_in_rec < recommendations_count:
+                        row = recommendations.iloc[idx_in_rec]
+                        
+                        platform = str(row.get('platform') or 'Unknown')
+                        name = str(row.get('product_name') or row.get('displayName') or '이름 없음')
+                        brand = str(row.get('brandName') or row.get('brand') or '브랜드 정보 없음')
+                        rating = row.get('rating', 0.0)
+                        reviews = int(row.get('review_count', 0))
+                        score = row['score']
+                        std_ing = str(row.get('표준성분', ''))
+                        bonus = row.get('wellness_bonus', 0.0)
+                        
+                        # 이미지 Fallback
+                        img_url = row.get('image_url') or row.get('img_url')
+                        if pd.isna(img_url) or not isinstance(img_url, str) or not img_url.strip():
+                            img_url = "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400"
+                            
+                        # 가격 포맷
+                        price_val = row.get('price')
+                        if pd.isna(price_val):
+                            price_val = row.get('discountPrice') or row.get('price_cur') or 0.0
+                        price_str = f"{int(price_val):,}원" if price_val > 0 else "가격 정보 없음"
+                        
+                        first_goal = survey['health_goals'][0] if survey.get('health_goals') else "건강관리"
+                        prod_form = str(row.get('productForm') or row.get('productForm') or '정제')
+                        if prod_form == 'nan':
+                            prod_form = '정제'
+                            
+                        detail_url = get_product_detail_url(row)
+                        
+                        # 선택 강조 표시
+                        is_selected = (row.name == selected_row.name)
+                        card_style = "border: 2px solid #10b981; background: rgba(16, 185, 129, 0.12); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);" if is_selected else ""
+                        rank_prefix = f"🔥 {idx_in_rec+1}위 (선택됨)" if is_selected else f"{idx_in_rec+1}위"
+                        
+                        # 식약처 가이드 요약 추출
+                        row_foodsafety = find_foodsafety_info(std_ing, db_data)
+                        fn_desc = "표준 고시 기준 규격 적용 원료"
+                        if row_foodsafety:
+                            fn_desc = row_foodsafety[0]['functionality'][:45] + "..." if len(row_foodsafety[0]['functionality']) > 45 else row_foodsafety[0]['functionality']
+                        
+                        with cols[c]:
+                            st.markdown(f"""
+                                <div class="ecommerce-card" style="{card_style}">
+                                    <div>
+                                        <div style="position: relative; width: 100%; height: 160px; overflow: hidden; border-radius: 12px; margin-bottom: 12px; background: #0f172a; display: flex; justify-content: center; align-items: center;">
+                                            <img src="{img_url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400'"/>
+                                        </div>
+                                        <div style="margin-bottom: 8px; line-height: 1.8;">
+                                            <span class="card-badge badge-goal">🎯 {first_goal}</span>
+                                            <span class="card-badge badge-platform">{platform.upper()}</span>
+                                            <span class="card-badge badge-form">💊 {prod_form}</span>
+                                        </div>
+                                        <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 2px;">{brand}</div>
+                                        <h4 style="margin: 0 0 6px 0; color: #f8fafc; font-size: 1rem; font-weight: 700; height: 42px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3;">{rank_prefix}. {name}</h4>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                            <span style="font-size: 1.15rem; font-weight: 800; color: #10b981;">{price_str}</span>
+                                            <div>
+                                                <span class="rating-star">⭐ {rating:.1f}</span>
+                                                <span style="font-size: 0.75rem; color: #64748b;">({reviews})</span>
+                                            </div>
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: #34d399;">가산점 반영: +{bonus:.2f}점</div>
+                                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 10px 0;"/>
+                                        <div style="font-size: 0.75rem; color: #cbd5e1; height: 36px; overflow: hidden; line-height: 1.3;">
+                                            <strong>💡 기능성 요약:</strong> {fn_desc}
+                                        </div>
                                     </div>
+                                    <a class="buy-btn" href="{detail_url}" target="_blank">
+                                        🛒 제품 상세 보기 ↗
+                                    </a>
                                 </div>
-                            </div>
-                        </div>
-                    """, unsafe_allow_html=True)
+                            """, unsafe_allow_html=True)
 
-            with col2:
-                st.markdown("### 🛡️ 식약처 공인 성분 지식베이스 가이드")
-                
-                std_ing = str(selected_row.get('표준성분', ''))
-                st.info(f"📋 **선택 제품**: {selected_row.get('product_name')}\n\n🧬 **검출 표준 성분**: `{std_ing}`")
-                
-                detail_url = get_product_detail_url(selected_row)
-                st.link_button("🛒 제품 상세 보기 ↗", url=detail_url, use_container_width=True)
-                
-                st.markdown("---")
+            # -------------------- 식약처 정밀 성분 분석 가이드 (하단에 단독 전체 폭 렌더링) --------------------
+            st.markdown("---")
+            st.markdown("### 🛡️ 선택 제품 식약처 정밀 성분 분석 가이드")
+            
+            std_ing = str(selected_row.get('표준성분', ''))
+            st.info(f"📋 **선택 제품**: {selected_row.get('product_name')}\n\n🧬 **검출 표준 성분**: `{std_ing}`")
+            
+            foodsafety_infos = find_foodsafety_info(std_ing, db_data)
 
-                foodsafety_infos = find_foodsafety_info(std_ing, db_data)
-
-                if not foodsafety_infos:
-                    st.info("💡 본 제품의 표준성분은 고시형 비타민/마그네슘 원료로, 개별인정형 지식베이스에서 별도 조회되지 않고 표준 고시 섭취 규격에 따릅니다.")
-                    
+            if not foodsafety_infos:
+                st.info("💡 본 제품의 표준성분은 고시형 비타민/마그네슘 원료로, 개별인정형 지식베이스에서 별도 조회되지 않고 표준 고시 섭취 규격에 따릅니다.")
+                
+                col_g1, col_g2 = st.columns(2)
+                with col_g1:
                     if "마그네슘" in std_ing:
                         st.subheader("🍀 마그네슘 (Magnesium)")
                         st.write("**기능성 내용**: 에너지 이용에 필요, 신경과 근육 기능 유지에 필요")
@@ -788,45 +840,48 @@ def main():
                         st.subheader("🍀 비타민C (Vitamin C)")
                         st.write("**기능성 내용**: 결합조직 형성과 기능유지에 필요, 철의 흡수에 필요, 항산화 작용을 하여 유해산소로부터 세포를 보호하는데 필요")
                         st.write("**섭취 주의사항**: 공복 섭취 시 위장 장애(속쓰림 등)를 유발할 수 있으므로 식후 섭취 권장")
-                    elif "비타민" in std_ing:
+                with col_g2:
+                    if "비타민" in std_ing:
                         st.subheader("🍀 종합 비타민 (Multivitamin)")
                         st.write("**기능성 내용**: 체내 에너지 대사, 면역 및 항산화 등 신체 생리기능 조절에 필수적 요소")
                         st.write("**섭취 주의사항**: 종합 영양제의 경우 특정 영양소 과다 중독 방지를 위해 복용 기준량 엄수")
-                else:
-                    tabs = st.tabs([f"🧪 {info['target_token']}" for info in foodsafety_infos])
-                    
-                    for tab, info in zip(tabs, foodsafety_infos):
-                        with tab:
-                            st.success(f"**식약처 공식 승인 명칭**: `{info['raw_material']}`")
-                            
+            else:
+                tabs = st.tabs([f"🧪 {info['target_token']}" for info in foodsafety_infos])
+                
+                for tab, info in zip(tabs, foodsafety_infos):
+                    with tab:
+                        st.success(f"**식약처 공식 승인 명칭**: `{info['raw_material']}`")
+                        
+                        col_tab1, col_tab2 = st.columns(2)
+                        with col_tab1:
                             st.markdown("#### 🎯 기능성 내용")
                             for line in info['functionality'].split('\n'):
                                 if line.strip():
                                     st.write(f"- {line.strip()}")
-                                    
+                        with col_tab2:
                             st.markdown("#### 🥄 권장 일일섭취량")
                             st.info(info['daily_intake'])
                             
                             st.markdown("#### ⚠️ 섭취 시 주의사항")
                             st.warning(info['precautions'])
-                
-                st.markdown("---")
-                
-                col_btn_back1, col_btn_back2 = st.columns(2)
-                with col_btn_back1:
-                    if st.button("⬅️ 이전 단계 (웰니스 리포트)"):
-                        st.session_state.step = 2
-                        st.rerun()
-                with col_btn_back2:
-                    if st.button("🔄 문진 새로 작성하기"):
-                        st.session_state.agreed = False
-                        st.session_state.step = 1
-                        st.session_state.survey_data = {}
-                        st.session_state.all_agree = False
-                        st.session_state.agree_1 = False
-                        st.session_state.agree_2 = False
-                        st.session_state.agree_3 = False
-                        st.rerun()
+            
+            st.markdown("---")
+            
+            col_btn_back1, col_btn_back2 = st.columns(2)
+            with col_btn_back1:
+                if st.button("⬅️ 이전 단계 (웰니스 리포트)"):
+                    st.session_state.step = 2
+                    st.rerun()
+            with col_btn_back2:
+                if st.button("🔄 문진 새로 작성하기"):
+                    st.session_state.agreed = False
+                    st.session_state.step = 1
+                    st.session_state.survey_data = {}
+                    st.session_state.all_agree = False
+                    st.session_state.agree_1 = False
+                    st.session_state.agree_2 = False
+                    st.session_state.agree_3 = False
+                    st.rerun()
 
     # ==================== 메뉴 분기 2: 📊 뉴트리핏 데이터 인사이트 (Admin) ====================
     elif selected_menu == "📊 뉴트리핏 데이터 인사이트 (Admin)":
@@ -884,6 +939,80 @@ def main():
                 st.info("누적된 건강고민 트렌드 정보가 없습니다.")
         else:
             st.info("누적된 사용자 진단 로그 파일(survey_logs.csv)이 존재하지 않거나 비어 있습니다.")
+
+        # -------------------- 🤖 NutriFit 예측 ML 엔진 시뮬레이터 섹션 --------------------
+        st.markdown("---")
+        st.subheader("🤖 NutriFit 예측 ML 엔진 시뮬레이터")
+        st.write("사용자 데이터 로그의 생활 습관 변수를 분석하고, 가중치 기반 회귀 모델을 사용해 시뮬레이션 대상 군의 만성질환 발전 위험도를 실시간 예측합니다.")
+        
+        # 기저 평균 피처 값 추출
+        avg_age = 35.0
+        avg_bmi = 23.5
+        if not df_logs.empty:
+            if 'age' in df_logs.columns:
+                def age_to_num(age_str):
+                    if '12' in str(age_str): return 8
+                    if '19' in str(age_str): return 16
+                    if '25' in str(age_str): return 22
+                    if '29' in str(age_str): return 27
+                    if '30' in str(age_str): return 35
+                    if '40' in str(age_str): return 45
+                    if '50' in str(age_str): return 55
+                    if '60' in str(age_str): return 65
+                    return 35
+                try:
+                    avg_age = df_logs['age'].apply(age_to_num).mean()
+                except:
+                    avg_age = 35.0
+            if 'bmi' in df_logs.columns:
+                avg_bmi = pd.to_numeric(df_logs['bmi'], errors='coerce').mean()
+                if pd.isna(avg_bmi):
+                    avg_bmi = 23.5
+                    
+        col_sim1, col_sim2 = st.columns(2)
+        with col_sim1:
+            st.markdown("##### ⚙️ 입력 생활습관 피처 조절")
+            stress_val = st.slider("1. 정신적 스트레스 지수 (1~5단계)", 1, 5, 3)
+            alcohol_val = st.slider("2. 주당 평균 음주 빈도 (회)", 0, 7, 2)
+            sleep_val = st.slider("3. 일일 평균 수면 시간 (시간)", 3, 10, 7)
+            
+        with col_sim2:
+            st.markdown("##### 📊 고정 가중치 변수 (누적 사용자 평균치 자동 수렴)")
+            st.write(f"- 👤 대상 유저군 평균 연령: **만 {avg_age:.1f}세**")
+            st.write(f"- ⚖️ 대상 유저군 평균 BMI 지수: **{avg_bmi:.2f}**")
+            
+            # 예측 시뮬레이터 가중치 수식 모델
+            base_risk = 12.5
+            stress_impact = (stress_val - 1) * 8.5
+            alcohol_impact = alcohol_val * 4.2
+            sleep_impact = max(0.0, (8.0 - sleep_val) * 7.5)
+            bmi_impact = max(0.0, (avg_bmi - 22.0) * 3.8)
+            age_impact = max(0.0, (avg_age - 20.0) * 0.4)
+            
+            predicted_risk = min(99.9, max(5.0, base_risk + stress_impact + alcohol_impact + sleep_impact + bmi_impact + age_impact))
+            
+            if predicted_risk <= 35.0:
+                risk_status = "낮음 (양호한 건강 웰니스 관리 상태)"
+                risk_color = "#10b981"
+            elif predicted_risk <= 65.0:
+                risk_status = "경고 (음주/수면 조절 및 성분 맞춤 케어 권장)"
+                risk_color = "#f59e0b"
+            else:
+                risk_status = "고위험 (만성 질환 발전 위험 수준, 정밀 진단 필수)"
+                risk_color = "#ef4444"
+                
+            st.markdown(f"""
+                <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 22px; text-align: center; margin-top: 10px;">
+                    <span style="font-size: 0.9rem; color: #94a3b8;">시뮬레이터 예측 건강 위험도</span>
+                    <h2 style="margin: 5px 0 10px 0; font-family: 'Outfit', sans-serif; font-size: 2.8rem; font-weight: 800; color: {risk_color};">{predicted_risk:.1f}%</h2>
+                    <div style="background: rgba(255, 255, 255, 0.08); border-radius: 10px; height: 16px; width: 100%; position: relative; overflow: hidden; margin-bottom: 12px;">
+                        <div style="background: {risk_color}; width: {predicted_risk}%; height: 100%; border-radius: 10px; transition: width 0.6s ease-in-out;"></div>
+                    </div>
+                    <div style="font-size: 0.85rem; color: #cbd5e1;">
+                        상태 분석: <strong><span style="color: {risk_color};">{risk_status}</span></strong>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
