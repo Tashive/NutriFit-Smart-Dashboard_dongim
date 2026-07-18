@@ -1014,6 +1014,72 @@ def main():
                 df_oth = recommendations[recommendations['표준성분'].str.contains('오메가|유산균|프로바이오틱스|콜라겐', na=False, case=False)]
                 render_product_grid(df_oth.head(12), selected_row, db_data, survey)
 
+            # -------------------- [🔥 킬러 피처 3] 🛒 뉴트리핏 인터랙티브 상품 비교 보관함 (Comparison Matrix) --------------------
+            st.markdown("---")
+            st.markdown("### 🛒 뉴트리핏 인터랙티브 상품 비교 보관함 (Comparison Matrix)")
+            st.write("선택하신 영양제들의 브랜드, 가격, 평점 및 식약처 공식 기능성 규격을 한눈에 병렬 대조하여 최적의 선택을 돕습니다.")
+            
+            selected_compare = st.multiselect(
+                "⚖️ 대조 비교할 상품을 보관함에 담아보세요 (최대 3개 선택):",
+                options=product_names_list,
+                default=product_names_list[:2] if len(product_names_list) >= 2 else product_names_list,
+                max_selections=3,
+                key="compare_matrix_selector"
+            )
+            
+            if not selected_compare:
+                st.info("비교할 상품을 보관함에 담아주세요 🛒")
+            else:
+                cols_compare = st.columns(len(selected_compare))
+                for idx_c, combo_label in enumerate(selected_compare):
+                    try:
+                        rank_idx = int(combo_label.split('위.')[0].strip()) - 1
+                        row_compare = recommendations.iloc[rank_idx]
+                        
+                        comp_platform = str(row_compare.get('platform') or 'Unknown')
+                        comp_name = str(row_compare.get('product_name') or row_compare.get('displayName') or '이름 없음')
+                        comp_brand = str(row_compare.get('brandName') or row_compare.get('brand') or '브랜드 정보 없음')
+                        comp_rating = row_compare.get('rating', 0.0)
+                        comp_reviews = int(row_compare.get('review_count', 0))
+                        comp_std_ing = str(row_compare.get('표준성분', ''))
+                        comp_detail_url = get_product_detail_url(row_compare)
+                        
+                        comp_price_val = row_compare.get('price')
+                        if pd.isna(comp_price_val):
+                            comp_price_val = row_compare.get('discountPrice') or row_compare.get('price_cur') or 0.0
+                        comp_price_str = f"{int(comp_price_val):,}원" if comp_price_val > 0 else "가격 정보 없음"
+                        
+                        comp_foodsafety = find_foodsafety_info(comp_std_ing, db_data)
+                        comp_fn_desc = "표준 고시 기준 규격 적용 원료"
+                        if comp_foodsafety:
+                            comp_fn_desc = comp_foodsafety[0]['functionality']
+                        
+                        with cols_compare[idx_c]:
+                            st.markdown(f"""
+                                <div style="background: rgba(30, 41, 59, 0.55); border: 2px solid #3b82f6; border-radius: 16px; padding: 20px; min-height: 390px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);">
+                                    <div>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                            <span style="font-size: 0.8rem; color: #60a5fa; background: rgba(59, 130, 246, 0.15); padding: 2px 8px; border-radius: 6px; font-weight: 700;">⚖️ 비교 {idx_c+1}</span>
+                                            <span style="font-size: 0.75rem; color: #94a3b8;">{comp_platform.upper()}</span>
+                                        </div>
+                                        <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 2px;">{comp_brand}</div>
+                                        <h4 style="margin: 0 0 8px 0; color: #f8fafc; font-size: 0.95rem; font-weight: 700; height: 38px; overflow: hidden; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">{comp_name}</h4>
+                                        <div style="font-size: 1.18rem; font-weight: 800; color: #10b981; margin-bottom: 6px;">{comp_price_str}</div>
+                                        <div style="font-size: 0.82rem; color: #fbbf24; margin-bottom: 10px;">⭐ {comp_rating:.1f} <span style="color: #64748b;">({comp_reviews:,}개 리뷰)</span></div>
+                                        <div style="font-size: 0.82rem; color: #cbd5e1; margin-bottom: 8px; line-height: 1.3;">🧬 <strong>표준성분:</strong> `{comp_std_ing}`</div>
+                                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.06); margin: 10px 0;"/>
+                                        <div style="font-size: 0.78rem; color: #cbd5e1; height: 90px; overflow-y: auto; line-height: 1.4; padding-right: 4px;">
+                                            <strong>📜 식약처 기능성:</strong> {comp_fn_desc}
+                                        </div>
+                                    </div>
+                                    <a class="buy-btn" href="{comp_detail_url}" target="_blank" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); margin-top: 15px;">
+                                        🛒 제품 상세 보기 ↗
+                                    </a>
+                                </div>
+                            """, unsafe_allow_html=True)
+                    except Exception as e:
+                        st.error(f"비교 처리 중 오류: {e}")
+
             # -------------------- [🔥 킬러 피처 2] ⏰ AI 복용 골든타임 스케줄러 --------------------
             st.markdown("---")
             st.markdown("### ⏰ AI 초개인화 복용 타임라인 가이드 (골든타임 스케줄러)")
