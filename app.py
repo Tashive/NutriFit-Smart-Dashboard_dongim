@@ -490,10 +490,6 @@ def main():
                     <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 20px; padding: 6px 14px; width: fit-content; margin-bottom: 15px;">
                         <span style="color: #60a5fa; font-weight: 700; font-size: 0.85rem;">📊 식약처 데이터 및 ML 기반 초개인화 엔진</span>
                     </div>
-                    <h1 style="font-size: 2.3rem; font-weight: 800; color: #f8fafc; line-height: 1.3; margin: 0 0 15px 0;">
-                        내 몸에 과한 영양은 독이 됩니다.<br>
-                        데이터 기반 <span style="background: linear-gradient(135deg, #10b981, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">오버도즈 차단 영양 설계</span>
-                    </h1>
                     <p style="color: #94a3b8; font-size: 0.95rem; line-height: 1.6; margin-bottom: 25px;">
                         단순한 추천을 넘어 23개 신체 변수 연산, Scikit-Learn 머신러닝 위험도 예측, 식약처 상한 섭취량 실시간 검증을 통해 가장 안전한 영양 조합과 복용 타임라인을 도출합니다.
                     </p>
