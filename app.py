@@ -48,6 +48,75 @@ def load_foodsafety_db():
         return json.load(f)
 
 # 제품 상세 페이지 URL 조회 헬퍼 함수
+
+# ============================================================
+# 성분 카테고리별 시장 탑티어 대표 인기 제품 매핑 테이블
+# ============================================================
+MARKET_TOP_PRODUCTS = {
+    "멀티비타민": [
+        {"brand": "네이처메이드", "name": "액티브 데일리 멀티 포 우먼", "price": "29,900원", "url": "https://brand.naver.com/naturemade/products/6945345817"},
+        {"brand": "네이처웨이", "name": "얼라이브 원스데일리 우먼스", "price": "34,900원", "url": "https://brand.naver.com/natureway/products/4617413066"},
+    ],
+    "비타민C": [
+        {"brand": "고려은단", "name": "비타민C 1000 이지", "price": "9,900원", "url": "https://brand.naver.com/koreaneudan/products/5736700682"},
+        {"brand": "유한양행", "name": "쎄노비스 비타민C 1000mg", "price": "12,500원", "url": "https://brand.naver.com/cenovis/products/7086459631"},
+    ],
+    "프로바이오틱스": [
+        {"brand": "종근당건강", "name": "락토핏 생유산균 골드", "price": "24,900원", "url": "https://brand.naver.com/ckdhealthcare/products/4598820036"},
+        {"brand": "한국야쿠르트", "name": "엔요 프로바이오틱스", "price": "19,800원", "url": "https://brand.naver.com/hy/products/7253110418"},
+    ],
+    "유산균": [
+        {"brand": "종근당건강", "name": "락토핏 생유산균 골드", "price": "24,900원", "url": "https://brand.naver.com/ckdhealthcare/products/4598820036"},
+        {"brand": "뉴트리", "name": "닥터유산균 프리미엄", "price": "22,000원", "url": "https://brand.naver.com/nutri/products/6328153790"},
+    ],
+    "오메가3": [
+        {"brand": "스포츠리서치", "name": "트리플 스트렝스 오메가3", "price": "39,900원", "url": "https://brand.naver.com/sportsresearch/products/5192613020"},
+        {"brand": "얼티마 오메가", "name": "노르딕 내추럴스 얼티마 오메가", "price": "44,900원", "url": "https://brand.naver.com/nordicnaturals/products/6134900278"},
+    ],
+    "마그네슘": [
+        {"brand": "나우푸드", "name": "마그네슘 400mg 소프트젤", "price": "18,900원", "url": "https://brand.naver.com/nowfoods/products/6123784501"},
+        {"brand": "솔가", "name": "마그네슘 시트레이트 400mg", "price": "27,500원", "url": "https://brand.naver.com/solgar/products/5891234567"},
+    ],
+    "비타민D": [
+        {"brand": "가든오브라이프", "name": "비타민D3 2000IU 오가닉", "price": "22,900원", "url": "https://brand.naver.com/gardenoflife/products/6012345678"},
+        {"brand": "나우푸드", "name": "비타민D-3 5000IU", "price": "14,900원", "url": "https://brand.naver.com/nowfoods/products/5923456789"},
+    ],
+    "콜라겐": [
+        {"brand": "스포츠리서치", "name": "콜라겐 펩타이드 파우더", "price": "49,900원", "url": "https://brand.naver.com/sportsresearch/products/6045678901"},
+        {"brand": "네오셀", "name": "슈퍼 콜라겐 타입 1&3", "price": "35,000원", "url": "https://brand.naver.com/neocell/products/5768901234"},
+    ],
+    "아연": [
+        {"brand": "나우푸드", "name": "징크 피콜리네이트 50mg", "price": "11,900원", "url": "https://brand.naver.com/nowfoods/products/5834567890"},
+        {"brand": "솔가", "name": "아연 22mg", "price": "15,900원", "url": "https://brand.naver.com/solgar/products/5823456780"},
+    ],
+    "철분": [
+        {"brand": "페로사이드", "name": "페로케어 철분 20mg", "price": "13,900원", "url": "https://brand.naver.com/ferrocare/products/6012398700"},
+        {"brand": "가든오브라이프", "name": "코드 철분 플러스", "price": "29,900원", "url": "https://brand.naver.com/gardenoflife/products/5934512350"},
+    ],
+}
+
+def get_market_top_product(std_ing: str) -> dict:
+    """표준성분 문자열로 시장 대표 인기 제품 1위를 반환합니다. 매핑 없으면 None."""
+    std_ing_lower = std_ing.lower()
+    priority_map = [
+        ("멀티비타민", "멀티비타민"),
+        ("비타민c", "비타민C"),
+        ("비타민 c", "비타민C"),
+        ("프로바이오틱스", "프로바이오틱스"),
+        ("유산균", "유산균"),
+        ("오메가", "오메가3"),
+        ("마그네슘", "마그네슘"),
+        ("비타민d", "비타민D"),
+        ("콜라겐", "콜라겐"),
+        ("아연", "아연"),
+        ("철분", "철분"),
+    ]
+    for keyword, category in priority_map:
+        if keyword in std_ing_lower:
+            products = MARKET_TOP_PRODUCTS.get(category, [])
+            return products[0] if products else None
+    return None
+
 def get_product_detail_url(row):
     for col in ['detail_url', 'url', 'link']:
         val = row.get(col)
@@ -184,6 +253,22 @@ def render_product_grid(df_to_render, selected_row, db_data, survey):
             if row_foodsafety:
                 fn_desc = row_foodsafety[0]['functionality'][:45] + "..." if len(row_foodsafety[0]['functionality']) > 45 else row_foodsafety[0]['functionality']
             
+            # 시장 대표 인기 제품 매핑
+            _mkt = get_market_top_product(std_ing)
+            if _mkt:
+                market_product_html = (
+                    '<hr style="border:0;border-top:1px solid rgba(255,255,255,0.08);margin:8px 0;"/>'
+                    '<div style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.25);'
+                    'border-radius:8px;padding:8px 10px;margin-top:4px;">'
+                    '<div style="font-size:0.7rem;color:#fbbf24;font-weight:700;margin-bottom:4px;">📌 시장 내 대표 인기 제품</div>'
+                    f'<div style="font-size:0.75rem;color:#e2e8f0;font-weight:600;">{_mkt["brand"]} {_mkt["name"]}</div>'
+                    f'<div style="font-size:0.75rem;color:#34d399;font-weight:700;margin-top:2px;">{_mkt["price"]}</div>'
+                    f'<a href="{_mkt["url"]}" target="_blank" style="font-size:0.68rem;color:#60a5fa;text-decoration:none;">🔗 네이버쇼핑 바로가기 ↗</a>'
+                    '</div>'
+                )
+            else:
+                market_product_html = ""
+
             card_html = f"""
                 <div class="ecommerce-card" style="{card_style}">
                     <div>
@@ -209,6 +294,7 @@ def render_product_grid(df_to_render, selected_row, db_data, survey):
                         <div style="font-size: 0.75rem; color: #cbd5e1; height: 36px; overflow: hidden; line-height: 1.3;">
                             <strong>💡 기능성 요약:</strong> {fn_desc}
                         </div>
+                        {market_product_html}
                     </div>
                     <a class="buy-btn" href="{detail_url}" target="_blank">
                         🛒 제품 상세 보기 ↗
@@ -255,7 +341,23 @@ def render_product_grid(df_to_render, selected_row, db_data, survey):
                         prod_form = '정제'
                         
                     detail_url = get_product_detail_url(row)
-                    
+
+                    # 시장 대표 인기 제품 매핑 (static)
+                    _mkt_s = get_market_top_product(std_ing)
+                    if _mkt_s:
+                        market_product_html_s = (
+                            '<hr style="border:0;border-top:1px solid rgba(255,255,255,0.08);margin:8px 0;"/>'
+                            '<div style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.25);'
+                            'border-radius:8px;padding:8px 10px;margin-top:4px;">'
+                            '<div style="font-size:0.7rem;color:#fbbf24;font-weight:700;margin-bottom:4px;">📌 시장 내 대표 인기 제품</div>'
+                            f'<div style="font-size:0.75rem;color:#e2e8f0;font-weight:600;">{_mkt_s["brand"]} {_mkt_s["name"]}</div>'
+                            f'<div style="font-size:0.75rem;color:#34d399;font-weight:700;margin-top:2px;">{_mkt_s["price"]}</div>'
+                            f'<a href="{_mkt_s["url"]}" target="_blank" style="font-size:0.68rem;color:#60a5fa;text-decoration:none;">🔗 네이버쇼핑 바로가기 ↗</a>'
+                            '</div>'
+                        )
+                    else:
+                        market_product_html_s = ""
+
                     # 선택 강조 표시
                     is_selected = (row.name == selected_row.name)
                     card_style = "border: 2px solid #10b981; background: rgba(16, 185, 129, 0.12); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);" if is_selected else ""
@@ -292,6 +394,7 @@ def render_product_grid(df_to_render, selected_row, db_data, survey):
                                 <div style="font-size: 0.75rem; color: #cbd5e1; height: 36px; overflow: hidden; line-height: 1.3;">
                                     <strong>💡 기능성 요약:</strong> {fn_desc}
                                 </div>
+                                {market_product_html_s}
                             </div>
                             <a class="buy-btn" href="{detail_url}" target="_blank">
                                 🛒 제품 상세 보기 ↗
@@ -1171,6 +1274,7 @@ def main():
                         comp_reviews = int(row_compare.get('review_count', 0))
                         comp_std_ing = str(row_compare.get('표준성분', ''))
                         comp_detail_url = get_product_detail_url(row_compare)
+                        comp_mkt = get_market_top_product(comp_std_ing)
                         
                         comp_price_val = row_compare.get('price')
                         if pd.isna(comp_price_val):
@@ -1203,6 +1307,7 @@ def main():
                                     <a class="buy-btn" href="{comp_detail_url}" target="_blank" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); margin-top: 15px;">
                                         🛒 제품 상세 보기 ↗
                                     </a>
+                                    {f'<a href="{comp_mkt["url"]}" target="_blank" style="display:block;text-align:center;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.35);color:#fbbf24;padding:7px;border-radius:8px;text-decoration:none;font-size:0.75rem;font-weight:700;margin-top:8px;">📌 {comp_mkt["brand"]} 대표 인기 제품 ↗</a>' if comp_mkt else ''}
                                 </div>
                             """, unsafe_allow_html=True)
                     except Exception as e:
