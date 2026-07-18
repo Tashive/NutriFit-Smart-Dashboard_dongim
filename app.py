@@ -450,7 +450,7 @@ def main():
             </div>
         """, unsafe_allow_html=True)
 
-    st.markdown('<div class="main-title">🥗 NutriFit Smart Dashboard</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-title">NutriFit Smart Dashboard</div>', unsafe_allow_html=True)
     st.markdown('<div class="sub-title">식약처 공인 데이터베이스 및 초개인화 가중 스코어링 기반 웰니스 큐레이션</div>', unsafe_allow_html=True)
 
     db_data = load_foodsafety_db()
