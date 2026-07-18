@@ -1,21 +1,19 @@
 """
-NutriFit 영양제 추천 스마트 대시보드 MVP (Streamlit - 5대 대고도화 및 킬러 피처 융합 버전)
+NutriFit 영양제 추천 스마트 대시보드 MVP (Streamlit - 실시간 스트리밍 UI 및 AI 총평 타이핑 연출 버전)
 
 이 스크립트는 면책 공지 및 필수 개인정보 동의 화면을 시작으로,
 사용자의 인구통계학적 특성, 라이프스타일, 안전성 필터(부작용 및 알레르기), 
 건강 고민 등 23개 전항목 문진을 기반으로 초개인화된 영양제를 추천하는 대시보드 앱입니다.
-다음의 5대 핵심 킬러 피처를 탑재하고 있습니다:
-1. 추천 결과 화면 카테고리별 동적 필터 탭 (전체/비타민/미네랄/오메가·유산균)
-2. Scikit-Learn LogisticRegression 실제 학습 모델 기반 백오피스 건강 위험도 예측기
-3. 동의어 사전 확장 및 필터 고도화 (scoring.py 연계)
-4. 영양소 과다 섭취 실시간 안전 시뮬레이터 (디옵티마이저)
-5. AI 초개인화 복용 골든타임 스케줄러 타임라인 가이드
+최초 진입 시 지루함을 방지하는 추천 상품 카드 순차 스트리밍 렌더링(One-by-One)과
+AI 개인화 총평 챗GPT 스타일 타이핑 효과(Text Streaming)를 연동했습니다.
+동시에 세션 상태 플래그를 관리하여 Rerun 시 불필요한 반복 스트리밍 지연을 방지했습니다.
 """
 
 import os
 import sys
 import json
 import re
+import time
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -128,7 +126,7 @@ def on_individual_change():
         st.session_state.agree_3
     )
 
-# 4열 제품 그리드 렌더러 함수 (동적 필터 및 중복 렌더링 호환)
+# 4열 제품 그리드 렌더러 함수 (순차 스트리밍 노출 연출 기능 탑재)
 def render_product_grid(df_to_render, selected_row, db_data, survey):
     if df_to_render.empty:
         st.info("해당 카테고리에 추천된 맞춤 상품이 없습니다.")
@@ -137,53 +135,139 @@ def render_product_grid(df_to_render, selected_row, db_data, survey):
     recommendations_count = len(df_to_render)
     rows_needed = (recommendations_count + 3) // 4
     
-    for r in range(rows_needed):
-        cols = st.columns(4)
-        for c in range(4):
-            idx_in_rec = r * 4 + c
-            if idx_in_rec < recommendations_count:
-                row = df_to_render.iloc[idx_in_rec]
+    # 최초 진입 시 스트리밍 미완료 상태인 경우: 0.18초 간격 순차 드로잉 연출
+    if not st.session_state.get('streaming_done', False):
+        grid_containers = []
+        for r in range(rows_needed):
+            cols = st.columns(4)
+            for c in range(4):
+                grid_containers.append(cols[c].empty())
                 
-                platform = str(row.get('platform') or 'Unknown')
-                name = str(row.get('product_name') or row.get('displayName') or '이름 없음')
-                brand = str(row.get('brandName') or row.get('brand') or '브랜드 정보 없음')
-                rating = row.get('rating', 0.0)
-                reviews = int(row.get('review_count', 0))
-                score = row['score']
-                std_ing = str(row.get('표준성분', ''))
-                bonus = row.get('wellness_bonus', 0.0)
+        for idx_in_rec in range(recommendations_count):
+            row = df_to_render.iloc[idx_in_rec]
+            
+            platform = str(row.get('platform') or 'Unknown')
+            name = str(row.get('product_name') or row.get('displayName') or '이름 없음')
+            brand = str(row.get('brandName') or row.get('brand') or '브랜드 정보 없음')
+            rating = row.get('rating', 0.0)
+            reviews = int(row.get('review_count', 0))
+            score = row['score']
+            std_ing = str(row.get('표준성분', ''))
+            bonus = row.get('wellness_bonus', 0.0)
+            
+            # 이미지 Fallback
+            img_url = row.get('image_url') or row.get('img_url')
+            if pd.isna(img_url) or not isinstance(img_url, str) or not img_url.strip():
+                img_url = "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400"
                 
-                # 이미지 Fallback
-                img_url = row.get('image_url') or row.get('img_url')
-                if pd.isna(img_url) or not isinstance(img_url, str) or not img_url.strip():
-                    img_url = "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400"
+            # 가격 포맷
+            price_val = row.get('price')
+            if pd.isna(price_val):
+                price_val = row.get('discountPrice') or row.get('price_cur') or 0.0
+            price_str = f"{int(price_val):,}원" if price_val > 0 else "가격 정보 없음"
+            
+            first_goal = survey['health_goals'][0] if survey.get('health_goals') else "건강관리"
+            prod_form = str(row.get('productForm') or row.get('productForm') or '정제')
+            if prod_form == 'nan':
+                prod_form = '정제'
+                
+            detail_url = get_product_detail_url(row)
+            
+            # 선택 강조 표시
+            is_selected = (row.name == selected_row.name)
+            card_style = "border: 2px solid #10b981; background: rgba(16, 185, 129, 0.12); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);" if is_selected else ""
+            rank_prefix = f"🔥 선택됨" if is_selected else f"추천"
+            
+            # 식약처 가이드 요약 추출
+            row_foodsafety = find_foodsafety_info(std_ing, db_data)
+            fn_desc = "표준 고시 기준 규격 적용 원료"
+            if row_foodsafety:
+                fn_desc = row_foodsafety[0]['functionality'][:45] + "..." if len(row_foodsafety[0]['functionality']) > 45 else row_foodsafety[0]['functionality']
+            
+            card_html = f"""
+                <div class="ecommerce-card" style="{card_style}">
+                    <div>
+                        <div style="position: relative; width: 100%; height: 160px; overflow: hidden; border-radius: 12px; margin-bottom: 12px; background: #0f172a; display: flex; justify-content: center; align-items: center;">
+                            <img src="{img_url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400'"/>
+                        </div>
+                        <div style="margin-bottom: 8px; line-height: 1.8;">
+                            <span class="card-badge badge-goal">🎯 {first_goal}</span>
+                            <span class="card-badge badge-platform">{platform.upper()}</span>
+                            <span class="card-badge badge-form">💊 {prod_form}</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 2px;">{brand}</div>
+                        <h4 style="margin: 0 0 6px 0; color: #f8fafc; font-size: 1rem; font-weight: 700; height: 42px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3;">{rank_prefix}. {name}</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="font-size: 1.15rem; font-weight: 800; color: #10b981;">{price_str}</span>
+                            <div>
+                                <span class="rating-star">⭐ {rating:.1f}</span>
+                                <span style="font-size: 0.75rem; color: #64748b;">({reviews})</span>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.75rem; color: #34d399;">가산점 반영: +{bonus:.2f}점</div>
+                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 10px 0;"/>
+                        <div style="font-size: 0.75rem; color: #cbd5e1; height: 36px; overflow: hidden; line-height: 1.3;">
+                            <strong>💡 기능성 요약:</strong> {fn_desc}
+                        </div>
+                    </div>
+                    <a class="buy-btn" href="{detail_url}" target="_blank">
+                        🛒 제품 상세 보기 ↗
+                    </a>
+                </div>
+            """
+            
+            # 극적 연출을 위한 딜레이 (지연 없이 매끄럽게 흐르도록 0.03초 설정)
+            time.sleep(0.03)
+            grid_containers[idx_in_rec].markdown(card_html, unsafe_allow_html=True)
+            
+    else:
+        # 스트리밍 완료 상태: 딜레이 없이 한 번에 렌더링
+        for r in range(rows_needed):
+            cols = st.columns(4)
+            for c in range(4):
+                idx_in_rec = r * 4 + c
+                if idx_in_rec < recommendations_count:
+                    row = df_to_render.iloc[idx_in_rec]
                     
-                # 가격 포맷
-                price_val = row.get('price')
-                if pd.isna(price_val):
-                    price_val = row.get('discountPrice') or row.get('price_cur') or 0.0
-                price_str = f"{int(price_val):,}원" if price_val > 0 else "가격 정보 없음"
-                
-                first_goal = survey['health_goals'][0] if survey.get('health_goals') else "건강관리"
-                prod_form = str(row.get('productForm') or row.get('productForm') or '정제')
-                if prod_form == 'nan':
-                    prod_form = '정제'
+                    platform = str(row.get('platform') or 'Unknown')
+                    name = str(row.get('product_name') or row.get('displayName') or '이름 없음')
+                    brand = str(row.get('brandName') or row.get('brand') or '브랜드 정보 없음')
+                    rating = row.get('rating', 0.0)
+                    reviews = int(row.get('review_count', 0))
+                    score = row['score']
+                    std_ing = str(row.get('표준성분', ''))
+                    bonus = row.get('wellness_bonus', 0.0)
                     
-                detail_url = get_product_detail_url(row)
-                
-                # 선택 강조 표시
-                is_selected = (row.name == selected_row.name)
-                card_style = "border: 2px solid #10b981; background: rgba(16, 185, 129, 0.12); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);" if is_selected else ""
-                rank_prefix = f"🔥 선택됨" if is_selected else f"추천"
-                
-                # 식약처 가이드 요약 추출
-                row_foodsafety = find_foodsafety_info(std_ing, db_data)
-                fn_desc = "표준 고시 기준 규격 적용 원료"
-                if row_foodsafety:
-                    fn_desc = row_foodsafety[0]['functionality'][:45] + "..." if len(row_foodsafety[0]['functionality']) > 45 else row_foodsafety[0]['functionality']
-                
-                with cols[c]:
-                    st.markdown(f"""
+                    # 이미지 Fallback
+                    img_url = row.get('image_url') or row.get('img_url')
+                    if pd.isna(img_url) or not isinstance(img_url, str) or not img_url.strip():
+                        img_url = "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400"
+                        
+                    # 가격 포맷
+                    price_val = row.get('price')
+                    if pd.isna(price_val):
+                        price_val = row.get('discountPrice') or row.get('price_cur') or 0.0
+                    price_str = f"{int(price_val):,}원" if price_val > 0 else "가격 정보 없음"
+                    
+                    first_goal = survey['health_goals'][0] if survey.get('health_goals') else "건강관리"
+                    prod_form = str(row.get('productForm') or row.get('productForm') or '정제')
+                    if prod_form == 'nan':
+                        prod_form = '정제'
+                        
+                    detail_url = get_product_detail_url(row)
+                    
+                    # 선택 강조 표시
+                    is_selected = (row.name == selected_row.name)
+                    card_style = "border: 2px solid #10b981; background: rgba(16, 185, 129, 0.12); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);" if is_selected else ""
+                    rank_prefix = f"🔥 선택됨" if is_selected else f"추천"
+                    
+                    # 식약처 가이드 요약 추출
+                    row_foodsafety = find_foodsafety_info(std_ing, db_data)
+                    fn_desc = "표준 고시 기준 규격 적용 원료"
+                    if row_foodsafety:
+                        fn_desc = row_foodsafety[0]['functionality'][:45] + "..." if len(row_foodsafety[0]['functionality']) > 45 else row_foodsafety[0]['functionality']
+                    
+                    cols[c].markdown(f"""
                         <div class="ecommerce-card" style="{card_style}">
                             <div>
                                 <div style="position: relative; width: 100%; height: 160px; overflow: hidden; border-radius: 12px; margin-bottom: 12px; background: #0f172a; display: flex; justify-content: center; align-items: center;">
@@ -379,6 +463,10 @@ def main():
         st.session_state.agree_2 = False
     if 'agree_3' not in st.session_state:
         st.session_state.agree_3 = False
+        
+    # 💥 실시간 스트리밍 모션 상태 제어 플래그 초기화
+    if 'streaming_done' not in st.session_state:
+        st.session_state.streaming_done = False
 
     # ==================== 메뉴 분기 1: 🥗 개인별 맞춤 큐레이션 ====================
     if selected_menu == "🥗 개인별 맞춤 큐레이션":
@@ -422,6 +510,8 @@ def main():
             if st.button("동의하고 시작하기", disabled=not agreed_all_checked):
                 st.session_state.agreed = True
                 st.session_state.step = 1
+                # 새로운 시작 시 스트리밍 플래그 해제
+                st.session_state.streaming_done = False
                 st.rerun()
                 
         # ==================== 화면 분기 1: STEP 1~5 설문 문진 작성 ====================
@@ -648,6 +738,7 @@ def main():
                     st.error(f"로그 적재 실패: {e}")
                     
                 st.session_state.step = 2
+                st.session_state.streaming_done = False # 새로운 분석 리포트 전환 시 플래그 리셋
                 st.rerun()
 
         # ==================== 화면 분기 2: 웰니스 스코어보드 결과 화면 ====================
@@ -759,6 +850,7 @@ def main():
             with col_btn2:
                 if st.button("초개인화 장바구니 큐레이션 보기 ➡️"):
                     st.session_state.step = 3
+                    st.session_state.streaming_done = False # 다음 단계 전환 시 스트리밍 플래그 초기화
                     st.rerun()
 
         # ==================== 화면 분기 3: 초개인화 장바구니 큐레이션 결과 ====================
@@ -786,6 +878,23 @@ def main():
                     🚫 <strong>배제된 부작용/알레르기:</strong> {exclusions_str}
                 </div>
             """, unsafe_allow_html=True)
+
+            # -------------------- [🔥 킬러 피처 2] AI 개인 맞춤 총평 타이핑 효과 (Text Streaming) --------------------
+            st.markdown("#### 🤖 뉴트리핏 AI 개인화 큐레이션 총평 리포트")
+            ai_report_text = (
+                f"{survey['gender']} ({survey['age']}) 분석 대상자님은 현재 [{', '.join(survey['health_goals'])}] 건강 고민을 집중 케어하기 위해 웰니스 스코어 보너스 가산점을 정밀 배분 받으셨습니다. "
+                f"현재 BMI 지수는 {survey['bmi']}로 안전 수준을 유지하고 계시며, 설정된 부작용 이력 및 [{exclusions_str}] 등의 성분이 함유된 제품군은 "
+                f"스코어 산정 리스트에서 선제 필터링되었습니다. 아래 식약처 공인 성분 지식베이스 규격에 맞춰 엄선한 랭킹 TOP 12와 최적의 복용 골든타임을 참고하시기 바랍니다."
+            )
+            
+            if not st.session_state.streaming_done:
+                def text_char_generator(text):
+                    for char in text:
+                        yield char
+                        time.sleep(0.008) # 자연스럽고 부드러운 타이핑 속도
+                st.write_stream(text_char_generator(ai_report_text))
+            else:
+                st.write(ai_report_text)
             
             categories = ["마그네슘", "비타민C", "오메가3", "유산균 / 프로바이오틱스", "콜라겐", "멀티비타민"]
             selected_category = st.selectbox(
@@ -797,7 +906,6 @@ def main():
             filter_cat = None if selected_category == "전체 맞춤 추천" else selected_category
 
             try:
-                # 탭 필터링 시 모든 상품 후보군을 넉넉히 가져와서 각 탭별로 대분류 필터 적용
                 recommendations = get_recommendations(survey, selected_category=filter_cat, top_n=24)
             except Exception as e:
                 st.error(f"추천 엔진 구동 중 에러가 발생했습니다: {e}")
@@ -871,7 +979,6 @@ def main():
                     except Exception as e:
                         pass
                 
-                # 상한선 경고 판정
                 danger_messages = []
                 if total_vit_c > 2000.0:
                     pct = (total_vit_c / 2000.0) * 100.0
@@ -907,7 +1014,7 @@ def main():
                 df_oth = recommendations[recommendations['표준성분'].str.contains('오메가|유산균|프로바이오틱스|콜라겐', na=False, case=False)]
                 render_product_grid(df_oth.head(12), selected_row, db_data, survey)
 
-            # -------------------- [🔥 킬러 피처 2] ⏰ AI 초개인화 복용 타임라인 가이드 (골든타임 스케줄러) --------------------
+            # -------------------- [🔥 킬러 피처 2] ⏰ AI 복용 골든타임 스케줄러 --------------------
             st.markdown("---")
             st.markdown("### ⏰ AI 초개인화 복용 타임라인 가이드 (골든타임 스케줄러)")
             st.write("유저의 일상 라이프스타일 문진과 추천된 영양 성분 고유의 흡수 대사 특성을 인공지능 매핑하여 도출한 맞춤형 골든타임 스케줄러입니다.")
@@ -1030,7 +1137,13 @@ def main():
                     st.session_state.agree_1 = False
                     st.session_state.agree_2 = False
                     st.session_state.agree_3 = False
+                    st.session_state.streaming_done = False
                     st.rerun()
+
+            # 💥 최하단 렌더링이 완벽하게 완료된 후 스트리밍 애니메이션 완료 플래그 적용 및 Rerun 1회 동기화 
+            if not st.session_state.streaming_done:
+                st.session_state.streaming_done = True
+                st.rerun()
 
     # ==================== 메뉴 분기 2: 📊 뉴트리핏 데이터 인사이트 (Admin) ====================
     elif selected_menu == "📊 뉴트리핏 데이터 인사이트 (Admin)":
