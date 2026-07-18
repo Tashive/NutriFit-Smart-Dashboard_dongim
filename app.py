@@ -536,47 +536,72 @@ def main():
                     st.rerun()
                     
             with landing_col2:
-                # 우측: 미니 대시보드 Mock-up (글래스모피즘)
-                st.markdown("""
-                    <div style="background: rgba(30, 41, 59, 0.45); border: 2px solid rgba(59, 130, 246, 0.25); border-radius: 20px; padding: 22px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); min-height: 480px; backdrop-filter: blur(10px);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 12px;">
-                            <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 700; font-family: 'Outfit';">&#128187; NutriFit Core v2.5</span>
-                            <span style="font-size: 0.78rem; color: #34d399; background: rgba(16, 185, 129, 0.15); padding: 3px 10px; border-radius: 20px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
-                                <span style="display: inline-block; width: 6px; height: 6px; background: #10b981; border-radius: 50%;"></span>
-                                &#129302; NutriFit ML Kernel Active
-                            </span>
-                        </div>
-                        <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; padding: 12px; margin-bottom: 18px; font-size: 0.82rem; color: #fca5a5; line-height: 1.4;">
-                            &#9888;&#65039; <strong>주의: 비타민D 과다 섭취 위험!</strong> (상한치 대비 125% 초과 감지)
-                        </div>
-                        <div style="display: flex; gap: 12px; margin-bottom: 18px;">
-                            <div style="flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px;">
-                                <span style="font-size: 0.65rem; color: #60a5fa; background: rgba(59, 130, 246, 0.12); padding: 1px 5px; border-radius: 4px;">만성피로</span>
-                                <h6 style="margin: 4px 0 2px 0; color: #f8fafc; font-size: 0.85rem;">종근당 원데이21</h6>
-                                <span style="font-size: 0.8rem; color: #10b981; font-weight: 700;">+5.33점</span>
-                            </div>
-                            <div style="flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px;">
-                                <span style="font-size: 0.65rem; color: #34d399; background: rgba(16, 185, 129, 0.12); padding: 1px 5px; border-radius: 4px;">장 건강</span>
-                                <h6 style="margin: 4px 0 2px 0; color: #f8fafc; font-size: 0.85rem;">얼라이브 포 우먼</h6>
-                                <span style="font-size: 0.8rem; color: #10b981; font-weight: 700;">+15.33점</span>
-                            </div>
-                        </div>
-                        <div style="background: rgba(0,0,0,0.15); border-radius: 10px; padding: 15px; border: 1px solid rgba(255,255,255,0.04);">
-                            <div style="font-size: 0.8rem; color: #94a3b8; font-weight: 700; margin-bottom: 10px;">&#9200; AI 복용 타임라인 프리뷰</div>
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.02); padding: 6px 10px; border-radius: 6px; font-size: 0.78rem;">
-                                    <span style="color: #60a5fa;">&#127749; 08:00</span>
-                                    <span style="color: #e2e8f0;">유산균 (공복 흡수 극대화)</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.02); padding: 6px 10px; border-radius: 6px; font-size: 0.78rem;">
-                                    <span style="color: #34d399;">&#9728;&#65039; 13:00</span>
-                                    <span style="color: #e2e8f0;">오메가3 / 멀티비타민 (식후 흡수)</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                """, unsafe_allow_html=True)
-                
+                # 우측: 3대 핵심 엔진 가동 상태 대시보드 (개인 데이터 완전 제거)
+                engine_status_html = (
+                    '<div style="background: rgba(15, 23, 42, 0.6); border: 2px solid rgba(59, 130, 246, 0.3);'
+                    ' border-radius: 20px; padding: 24px; box-shadow: 0 15px 40px rgba(0,0,0,0.5);'
+                    ' min-height: 480px; backdrop-filter: blur(12px);">'
+
+                    '<div style="margin-bottom: 8px;">'
+                    '<span style="font-size: 1rem; color: #f1f5f9; font-weight: 800; font-family: Outfit, sans-serif;">'
+                    '&#128187; NutriFit Core Engine Status</span></div>'
+
+                    '<div style="display: flex; align-items: center; gap: 7px; margin-bottom: 22px;'
+                    ' padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.07);">'
+                    '<span style="display:inline-block; width:8px; height:8px; background:#10b981;'
+                    ' border-radius:50%; box-shadow:0 0 6px #10b981;"></span>'
+                    '<span style="font-size:0.78rem; color:#34d399; font-weight:700;">'
+                    '&#9679; Core Kernel Active &#129001;</span></div>'
+
+                    '<div style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.2);'
+                    ' border-radius:12px; padding:16px; margin-bottom:14px;">'
+                    '<div style="display:flex; align-items:flex-start; gap:12px;">'
+                    '<span style="font-size:1.5rem; line-height:1;">&#128737;&#65039;</span>'
+                    '<div style="flex:1;">'
+                    '<div style="font-size:0.82rem; font-weight:700; color:#e2e8f0; margin-bottom:5px;">'
+                    '알레르기 및 부작용 Hard Filter Engine</div>'
+                    '<div style="font-size:0.75rem; color:#94a3b8; margin-bottom:8px;">'
+                    '23개 변수 스캐닝 준비 완료</div>'
+                    '<div style="display:flex; align-items:center; gap:6px;">'
+                    '<span style="display:inline-block; width:6px; height:6px; background:#10b981; border-radius:50%;"></span>'
+                    '<span style="font-size:0.72rem; color:#34d399; font-weight:600;">'
+                    'READY &mdash; 확산 필터 가동 대기 중 &#129001;</span>'
+                    '</div></div></div></div>'
+
+                    '<div style="background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.2);'
+                    ' border-radius:12px; padding:16px; margin-bottom:14px;">'
+                    '<div style="display:flex; align-items:flex-start; gap:12px;">'
+                    '<span style="font-size:1.5rem; line-height:1;">&#128138;</span>'
+                    '<div style="flex:1;">'
+                    '<div style="font-size:0.82rem; font-weight:700; color:#e2e8f0; margin-bottom:5px;">'
+                    '영양소 오버도즈 디옵티마이저</div>'
+                    '<div style="font-size:0.75rem; color:#94a3b8; margin-bottom:8px;">'
+                    '식약처 상한 섭취량 실시간 동기화 완료</div>'
+                    '<div style="display:flex; align-items:center; gap:6px;">'
+                    '<span style="display:inline-block; width:6px; height:6px; background:#10b981; border-radius:50%;"></span>'
+                    '<span style="font-size:0.72rem; color:#34d399; font-weight:600;">'
+                    'SYNCED &mdash; 식약처 DB 연동 정상 &#129001;</span>'
+                    '</div></div></div></div>'
+
+                    '<div style="background:rgba(167,139,250,0.06); border:1px solid rgba(167,139,250,0.2);'
+                    ' border-radius:12px; padding:16px;">'
+                    '<div style="display:flex; align-items:flex-start; gap:12px;">'
+                    '<span style="font-size:1.5rem; line-height:1;">&#129302;</span>'
+                    '<div style="flex:1;">'
+                    '<div style="font-size:0.82rem; font-weight:700; color:#e2e8f0; margin-bottom:5px;">'
+                    'Scikit-Learn ML 가중치 연산 커널</div>'
+                    '<div style="font-size:0.75rem; color:#94a3b8; margin-bottom:8px;">'
+                    '독립변수 다차원 추론 대기 중</div>'
+                    '<div style="display:flex; align-items:center; gap:6px;">'
+                    '<span style="display:inline-block; width:6px; height:6px; background:#10b981; border-radius:50%;"></span>'
+                    '<span style="font-size:0.72rem; color:#34d399; font-weight:600;">'
+                    'STANDBY &mdash; ML 테크놀로지 실시간 가동 중 &#129001;</span>'
+                    '</div></div></div></div>'
+
+                    '</div>'
+                )
+                st.markdown(engine_status_html, unsafe_allow_html=True)
+
             st.markdown("---")
             
             # 하단: 3단 프로세스 플로우 인포그래픽
