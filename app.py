@@ -481,47 +481,147 @@ def main():
     if selected_menu == "🥗 개인별 맞춤 큐레이션":
         # ==================== 화면 분기 0: 면책 공지 및 필수 동의 화면 ====================
         if not st.session_state.agreed:
-            st.subheader("🛡️ 서비스 시작 전 면책 공지 및 개인정보 활용 동의")
+            # 2열 분할 레이아웃
+            landing_col1, landing_col2 = st.columns([1.1, 0.9], gap="large")
             
-            st.warning(
-                "⚠️ **서비스 안내 및 면책 공지**:\n\n"
-                "본 서비스는 의학적 치료나 진단을 대체하는 의료 행위가 아니며, "
-                "식약처 공공데이터를 기반으로 한 영양 정보 참고용 웰니스 큐레이션 서비스입니다."
-            )
-            
-            st.write("서비스 이용을 위해 아래 필수 약관에 동의해 주세요.")
-            
-            st.checkbox("전체 동의합니다.", key="all_agree", on_change=on_all_agree_change)
+            with landing_col1:
+                # 좌측: 프리미엄 텍스트 & 약관 동의
+                st.markdown("""
+                    <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 20px; padding: 6px 14px; width: fit-content; margin-bottom: 15px;">
+                        <span style="color: #60a5fa; font-weight: 700; font-size: 0.85rem;">📊 식약처 데이터 및 ML 기반 초개인화 엔진</span>
+                    </div>
+                    <h1 style="font-size: 2.3rem; font-weight: 800; color: #f8fafc; line-height: 1.3; margin: 0 0 15px 0;">
+                        내 몸에 과한 영양은 독이 됩니다.<br>
+                        데이터 기반 <span style="background: linear-gradient(135deg, #10b981, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">오버도즈 차단 영양 설계</span>
+                    </h1>
+                    <p style="color: #94a3b8; font-size: 0.95rem; line-height: 1.6; margin-bottom: 25px;">
+                        단순한 추천을 넘어 23개 신체 변수 연산, Scikit-Learn 머신러닝 위험도 예측, 식약처 상한 섭취량 실시간 검증을 통해 가장 안전한 영양 조합과 복용 타임라인을 도출합니다.
+                    </p>
+                """, unsafe_allow_html=True)
+                
+                # 면책 조항 주의 박스
+                st.markdown("""
+                    <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; padding: 15px; margin-bottom: 20px; font-size: 0.85rem; color: #cbd5e1; line-height: 1.45;">
+                        ⚠️ <strong>서비스 안내 및 면책 공지</strong><br>
+                        본 서비스는 의학적 치료나 진단을 대체하는 의료 행위가 아니며, 식약처 공공데이터 및 가중 모델을 활용한 참고용 웰니스 큐레이션입니다.
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                # 약관 동의 체크박스 영역 (기능 보존)
+                st.checkbox("전체 동의합니다.", key="all_agree", on_change=on_all_agree_change)
+                st.markdown("---")
+                
+                st.checkbox("1. [필수] 서비스 이용약관 및 일반 개인정보 수집·이용 동의", key="agree_1", on_change=on_individual_change)
+                with st.expander("📜 약관 상세내역 조회"):
+                    st.markdown("""
+                        * **수집 목적**: 개인 맞춤형 영양소 큐레이션 및 대시보드 제공
+                        * **보유 및 이용 기간**: **목적 달성 즉시 파기** (세션 종료 시 즉시 파기)
+                    """)
+                    
+                st.checkbox("2. [필수] 만 14세 이상 이용 확인", key="agree_2", on_change=on_individual_change)
+                with st.expander("📜 약관 상세내역 조회"):
+                    st.markdown("""
+                        * **제한 고시**: 본 서비스는 아동의 민감정보 수집 방지를 위해 **만 14세 미만의 이용을 제한**합니다.
+                    """)
+                    
+                st.checkbox("3. [필수] 건강 상태 및 라이프스타일(민감정보) 수집·이용 동의", key="agree_3", on_change=on_individual_change)
+                with st.expander("📜 약관 상세내역 조회"):
+                    st.markdown("""
+                        * **법적 근거**: **개인정보보호법 제23조**에 의거, 질환 정보 및 부작용 이력 등 민감정보 수집에 동의합니다.
+                    """)
+                    
+                agreed_all_checked = st.session_state.agree_1 and st.session_state.agree_2 and st.session_state.agree_3
+                
+                st.markdown("<br>", unsafe_allow_html=True)
+                if st.button("⚡ 3분만에 내 맞춤 영양 진단하기", disabled=not agreed_all_checked, use_container_width=True):
+                    st.session_state.agreed = True
+                    st.session_state.step = 1
+                    st.session_state.streaming_done = False
+                    st.rerun()
+                    
+            with landing_col2:
+                # 우측: 미니 대시보드 Mock-up (글래스모피즘)
+                st.markdown("""
+                    <div style="background: rgba(30, 41, 59, 0.45); border: 2px solid rgba(59, 130, 246, 0.25); border-radius: 20px; padding: 22px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); min-height: 480px; backdrop-filter: blur(10px);">
+                        <!-- 상단: ML 커널 액티브 라벨 -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 12px;">
+                            <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 700; font-family: 'Outfit';">💻 NutriFit Core v2.5</span>
+                            <span style="font-size: 0.78rem; color: #34d399; background: rgba(16, 185, 129, 0.15); padding: 3px 10px; border-radius: 20px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                                <span style="display: inline-block; width: 6px; height: 6px; background: #10b981; border-radius: 50%;"></span>
+                                🤖 NutriFit ML Kernel Active
+                            </span>
+                        </div>
+                        
+                        <!-- 중단 1: 가상 경고 바 -->
+                        <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; padding: 12px; margin-bottom: 18px; font-size: 0.82rem; color: #fca5a5; line-height: 1.4;">
+                            ⚠️ <strong>주의: 비타민D 과다 섭취 위험!</strong> (상한치 대비 125% 초과 감지)
+                        </div>
+                        
+                        <!-- 중단 2: 미니 카드 2개 -->
+                        <div style="display: flex; gap: 12px; margin-bottom: 18px;">
+                            <div style="flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px;">
+                                <span style="font-size: 0.65rem; color: #60a5fa; background: rgba(59, 130, 246, 0.12); padding: 1px 5px; border-radius: 4px;">만성피로</span>
+                                <h6 style="margin: 4px 0 2px 0; color: #f8fafc; font-size: 0.85rem;">종근당 원데이21</h6>
+                                <span style="font-size: 0.8rem; color: #10b981; font-weight: 700;">+5.33점</span>
+                            </div>
+                            <div style="flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px;">
+                                <span style="font-size: 0.65rem; color: #34d399; background: rgba(16, 185, 129, 0.12); padding: 1px 5px; border-radius: 4px;">장 건강</span>
+                                <h6 style="margin: 4px 0 2px 0; color: #f8fafc; font-size: 0.85rem;">얼라이브 포 우먼</h6>
+                                <span style="font-size: 0.8rem; color: #10b981; font-weight: 700;">+15.33점</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 하단: 미니 타임라인 가이드 -->
+                        <div style="background: rgba(0,0,0,0.15); border-radius: 10px; padding: 15px; border: 1px solid rgba(255,255,255,0.04);">
+                            <div style="font-size: 0.8rem; color: #94a3b8; font-weight: 700; margin-bottom: 10px;">⏰ AI 복용 타임라인 프리뷰</div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.02); padding: 6px 10px; border-radius: 6px; font-size: 0.78rem;">
+                                    <span style="color: #60a5fa;">🌅 08:00</span>
+                                    <span style="color: #e2e8f0;">유산균 (공복 흡수 극대화)</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.02); padding: 6px 10px; border-radius: 6px; font-size: 0.78rem;">
+                                    <span style="color: #34d399;">☀️ 13:00</span>
+                                    <span style="color: #e2e8f0;">오메가3 / 멀티비타민 (식후 흡수)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+                
             st.markdown("---")
             
-            col_ag1 = st.checkbox("1. [필수] 서비스 이용약관 및 일반 개인정보 수집·이용 동의", key="agree_1", on_change=on_individual_change)
-            with st.expander("📜 약관 상세내역 조회"):
-                st.markdown("""
-                    * **수집 목적**: 개인 맞춤형 영양소 큐레이션 및 대시보드 제공
-                    * **보유 및 이용 기간**: **목적 달성 즉시 파기** (탈퇴 또는 브라우저 세션 종료 시 즉시 영구 삭제)
-                """)
-                
-            col_ag2 = st.checkbox("2. [필수] 만 14세 이상 이용 확인", key="agree_2", on_change=on_individual_change)
-            with st.expander("📜 약관 상세내역 조회"):
-                st.markdown("""
-                    * **제한 고시**: 본 서비스는 아동의 민감정보 수집 방지를 위해 **만 14세 미만의 이용을 제한**합니다.
-                """)
-                
-            col_ag3 = st.checkbox("3. [필수] 건강 상태 및 라이프스타일(민감정보) 수집·이용 동의", key="agree_3", on_change=on_individual_change)
-            with st.expander("📜 약관 상세내역 조회"):
-                st.markdown("""
-                    * **법적 근거**: **개인정보보호법 제23조**에 의거, 질환 정보 및 부작용 이력 등 민감정보 수집에 동의합니다.
-                    * **수집 항목**: 성별, 연령대, 신체 스펙(키, 몸무게), 라이프스타일 습관(운동, 음주, 카페인, 수면, 흡연), 지병 및 과거 부작용 경험 성분
-                """)
-                
-            agreed_all_checked = st.session_state.agree_1 and st.session_state.agree_2 and st.session_state.agree_3
+            # 하단: 3단 프로세스 플로우 인포그래픽
+            st.markdown("### 🗺️ 뉴트리핏 케어 프로세스 플로우")
+            st.write("안전한 데이터 분석에 입각해 추천부터 섭취 라이프사이클까지 과학적으로 제어합니다.")
             
-            if st.button("동의하고 시작하기", disabled=not agreed_all_checked):
-                st.session_state.agreed = True
-                st.session_state.step = 1
-                # 새로운 시작 시 스트리밍 플래그 해제
-                st.session_state.streaming_done = False
-                st.rerun()
+            col_p1, col_p2, col_p3 = st.columns(3)
+            with col_p1:
+                st.markdown("""
+                    <div style="background: rgba(30, 41, 59, 0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 18px; min-height: 150px; text-align: center;">
+                        <h4 style="margin: 0 0 8px 0; color: #60a5fa; font-family: 'Outfit'; font-size: 1.15rem;">01. 초개인화 문진</h4>
+                        <p style="font-size: 0.82rem; color: #94a3b8; line-height: 1.5; margin: 0;">
+                            성별 분기 데이터 수집, BMI 자가 판정, 23개 전항목 신체 습관 변수를 복합 설계하여 유저의 고유 데이터를 수렴합니다.
+                        </p>
+                    </div>
+                """, unsafe_allow_html=True)
+            with col_p2:
+                st.markdown("""
+                    <div style="background: rgba(30, 41, 59, 0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 18px; min-height: 150px; text-align: center;">
+                        <h4 style="margin: 0 0 8px 0; color: #34d399; font-family: 'Outfit'; font-size: 1.15rem;">02. ML 위험도 및 상한치 분석</h4>
+                        <p style="font-size: 0.82rem; color: #94a3b8; line-height: 1.5; margin: 0;">
+                            Scikit-Learn 로지스틱 회귀를 통한 만성질환 리스크 예측과 성분 중복에 따른 과다 복용 위험을 실시간 안전 필터링합니다.
+                        </p>
+                    </div>
+                """, unsafe_allow_html=True)
+            with col_p3:
+                st.markdown("""
+                    <div style="background: rgba(30, 41, 59, 0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 18px; min-height: 150px; text-align: center;">
+                        <h4 style="margin: 0 0 8px 0; color: #fbbf24; font-family: 'Outfit'; font-size: 1.15rem;">03. 매트릭스 비교 및 캘린더 매핑</h4>
+                        <p style="font-size: 0.82rem; color: #94a3b8; line-height: 1.5; margin: 0;">
+                            상품 보관함 비교 매트릭스를 통한 스펙 병렬 대조와 3대 시간대별 복용 스케줄러 자동 편성으로 올바른 섭취 주기를 제안합니다.
+                        </p>
+                    </div>
+                """, unsafe_allow_html=True)
                 
         # ==================== 화면 분기 1: STEP 1~5 설문 문진 작성 ====================
         elif st.session_state.step == 1:
