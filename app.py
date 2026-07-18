@@ -417,10 +417,19 @@ def main():
             st.session_state.logged_in_username = ""
             st.rerun()
 
-    # 사이드바 하단 - 시스템 관리자(Admin) 모드 토글 및 조건부 동적 메뉴 구성
+    # 사이드바 하단 - 마스터 패스워드 인증 및 백오피스 동적 라우팅 구성
     st.sidebar.markdown("---")
-    admin_mode = st.sidebar.checkbox("⚙️ 시스템 관리자(Admin) 모드 활성화", value=False)
+    admin_password = st.sidebar.text_input(
+        "🔒 시스템 관리자 인증",
+        type="password",
+        help="우리 팀원 전용 백오피스 인증 창입니다."
+    )
     
+    admin_mode = (admin_password == "nutrifit2026!")
+    
+    if admin_mode:
+        st.sidebar.success("🔑 관리자 인증 성공! 백오피스가 활성화되었습니다.")
+        
     menu_options = ["🥗 개인별 맞춤 큐레이션"]
     if admin_mode:
         menu_options.append("📊 뉴트리핏 데이터 인사이트 (Admin)")
