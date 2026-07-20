@@ -413,7 +413,7 @@ def main():
         
         /* 메인 콘텐츠 영역 상단 헤드룸 및 와이드 여백 확보 */
         .main .block-container {
-            padding-top: 130px !important;
+            padding-top: 110px !important;
             background: transparent !important;
         }
 
@@ -430,13 +430,26 @@ def main():
             border-right: 1px solid rgba(90, 131, 241, 0.1) !important;
         }
         
-        /* ========== 모든 위젯 및 입력 폼 가독성 & 프리미엄 테이밍 ========== */
-        input, select, textarea, div[role="listbox"], [data-baseweb="select"], .stSelectbox, .stMultiSelect {
-            background-color: rgba(255, 255, 255, 0.9) !important;
-            color: #374151 !important;
+        /* ========== 모든 위젯 및 입력 폼 가독성 & 프리미엄 테이밍 (배경 화이트, 텍스트 딥차콜) ========== */
+        input, select, textarea, [data-baseweb="select"], .stSelectbox div, .stMultiSelect div {
+            background-color: #FFFFFF !important;
+            color: #1F2937 !important;
             border: 1px solid rgba(90, 131, 241, 0.15) !important;
             border-radius: 12px !important;
             transition: all 0.3s ease-in-out !important;
+        }
+        
+        /* 멀티셀렉트 드롭다운 팝업 리스트 가독성 강제 고정 */
+        div[role="listbox"] {
+            background-color: #FFFFFF !important;
+        }
+        div[role="listbox"] li {
+            color: #1F2937 !important;
+            background-color: #FFFFFF !important;
+        }
+        div[role="listbox"] li:hover {
+            background-color: #E5EFFF !important;
+            color: #2C3281 !important;
         }
         
         /* 포커스 및 선택 시 브랜드 주색 (#5A83F1) 은은한 네온 효과 */
@@ -446,19 +459,43 @@ def main():
         }
         
         .stRadio label, .stCheckbox label, .stSelectbox label, .stMultiSelect label, .stSlider label, .stTextInput label, .stNumberInput label {
-            color: #374151 !important;
+            color: #1F2937 !important;
             font-weight: 600 !important;
         }
         
         [data-testid="stWidgetLabel"] p, [data-testid="stMarkdownContainer"] p {
-            color: #374151 !important;
+            color: #1F2937 !important;
         }
         
+        /* 멀티셀렉트 선택된 태그 칩 (소프트블루 #E5EFFF 및 딥블루 #2C3281 매핑) */
         [data-baseweb="tag"] {
             background-color: #E5EFFF !important;
             color: #2C3281 !important;
             border: 1px solid rgba(90, 131, 241, 0.3) !important;
             border-radius: 8px !important;
+        }
+        [data-baseweb="tag"] span {
+            color: #2C3281 !important;
+        }
+        
+        /* ========== 스트림릿 기본 버튼 디자인 프리미엄 화이트/그라데이션 및 글자색 화이트 강제 고정 ========== */
+        .stButton button {
+            background: linear-gradient(135deg, #5A83F1, #2C3281) !important;
+            color: #FFFFFF !important;
+            border: none !important;
+            border-radius: 12px !important;
+            padding: 10px 24px !important;
+            font-weight: 700 !important;
+            box-shadow: 0 4px 15px rgba(90, 131, 241, 0.15) !important;
+            transition: all 0.3s ease-in-out !important;
+        }
+        .stButton button:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(90, 131, 241, 0.3) !important;
+            opacity: 0.95 !important;
+        }
+        .stButton button p, .stButton button span {
+            color: #FFFFFF !important;
         }
         
         /* ========== 오버도즈 경고 펄스 애니메이션 ========== */
@@ -488,7 +525,7 @@ def main():
             z-index: 999999;
             backdrop-filter: blur(20px);
             box-shadow: 0 10px 40px -10px rgba(44, 50, 129, 0.05);
-            height: 75px;
+            height: 70px;
             transition: all 0.3s ease-in-out;
         }
         .gnb-logo {
@@ -535,9 +572,9 @@ def main():
 
         /* ========== 화이트 글래스모피즘 카드 및 스무스 이징 호버 ========== */
         .ecommerce-card {
-            background: rgba(255, 255, 255, 0.85) !important;
-            backdrop-filter: blur(10px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.6) !important;
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(8px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
             border-radius: 24px;
             padding: 22px;
             margin-bottom: 24px;
@@ -545,7 +582,7 @@ def main():
             flex-direction: column;
             justify-content: space-between;
             height: 590px;
-            box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.04) !important;
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05) !important;
             transition: all 0.3s ease-in-out !important;
         }
         .ecommerce-card:hover {
@@ -589,13 +626,13 @@ def main():
 
         /* ========== 유틸리티 사이드카드 (글래스모피즘 & 0.3s 모션) ========== */
         .side-util-card {
-            background: rgba(255, 255, 255, 0.85) !important;
-            backdrop-filter: blur(10px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.6) !important;
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(8px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
             border-radius: 24px;
             padding: 24px;
             margin-bottom: 20px;
-            box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.04) !important;
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05) !important;
             transition: all 0.3s ease-in-out !important;
         }
         .side-util-card:hover {
