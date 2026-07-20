@@ -244,7 +244,7 @@ def render_product_grid(df_to_render, selected_row, db_data, survey):
             
             # 선택 강조 표시
             is_selected = (row.name == selected_row.name)
-            card_style = "border: 2px solid #10b981; background: rgba(16, 185, 129, 0.12); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);" if is_selected else ""
+            card_style = "border: 2px solid #5A83F1; background: #E5EFFF; box-shadow: 0 10px 25px rgba(90, 131, 241, 0.15);" if is_selected else ""
             rank_prefix = f"🔥 선택됨" if is_selected else f"추천"
             
             # 식약처 가이드 요약 추출
@@ -256,51 +256,47 @@ def render_product_grid(df_to_render, selected_row, db_data, survey):
             # 시장 대표 인기 제품 매핑
             _mkt = get_market_top_product(std_ing)
             if _mkt:
-                market_product_html = (
-                    '<hr style="border:0;border-top:1px solid rgba(255,255,255,0.08);margin:8px 0;"/>'
-                    '<div style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.25);'
-                    'border-radius:8px;padding:8px 10px;margin-top:4px;">'
-                    '<div style="font-size:0.7rem;color:#fbbf24;font-weight:700;margin-bottom:4px;">📌 시장 내 대표 인기 제품</div>'
-                    f'<div style="font-size:0.75rem;color:#e2e8f0;font-weight:600;">{_mkt["brand"]} {_mkt["name"]}</div>'
-                    f'<div style="font-size:0.75rem;color:#34d399;font-weight:700;margin-top:2px;">{_mkt["price"]}</div>'
-                    f'<a href="{_mkt["url"]}" target="_blank" style="font-size:0.68rem;color:#60a5fa;text-decoration:none;">🔗 네이버쇼핑 바로가기 ↗</a>'
-                    '</div>'
-                )
+                market_product_html = f'''<hr style="border:0;border-top:1px solid #E5EFFF;margin:8px 0;"/>
+<div style="background:#FAFBFF;border:1px solid #E5EFFF;border-radius:8px;padding:8px 10px;margin-top:4px;">
+<div style="font-size:0.7rem;color:#2C3281;font-weight:700;margin-bottom:4px;">📌 시장 내 대표 인기 제품</div>
+<div style="font-size:0.75rem;color:#1F2937;font-weight:600;">{_mkt["brand"]} {_mkt["name"]}</div>
+<div style="font-size:0.75rem;color:#5A83F1;font-weight:700;margin-top:2px;">{_mkt["price"]}</div>
+<a href="{_mkt["url"]}" target="_blank" style="font-size:0.68rem;color:#5A83F1;text-decoration:none;font-weight:700;">🔗 네이버쇼핑 바로가기 ↗</a>
+</div>'''
             else:
                 market_product_html = ""
 
-            card_html = f"""
-                <div class="ecommerce-card" style="{card_style}">
-                    <div>
-                        <div style="position: relative; width: 100%; height: 160px; overflow: hidden; border-radius: 12px; margin-bottom: 12px; background: #0f172a; display: flex; justify-content: center; align-items: center;">
-                            <img src="{img_url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400'"/>
-                        </div>
-                        <div style="margin-bottom: 8px; line-height: 1.8;">
-                            <span class="card-badge badge-goal">🎯 {first_goal}</span>
-                            <span class="card-badge badge-platform">{platform.upper()}</span>
-                            <span class="card-badge badge-form">💊 {prod_form}</span>
-                        </div>
-                        <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 2px;">{brand}</div>
-                        <h4 style="margin: 0 0 6px 0; color: #f8fafc; font-size: 1rem; font-weight: 700; height: 42px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3;">{rank_prefix}. {name}</h4>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                            <span style="font-size: 1.15rem; font-weight: 800; color: #10b981;">{price_str}</span>
-                            <div>
-                                <span class="rating-star">⭐ {rating:.1f}</span>
-                                <span style="font-size: 0.75rem; color: #64748b;">({reviews})</span>
-                            </div>
-                        </div>
-                        <div style="font-size: 0.75rem; color: #34d399;">가산점 반영: +{bonus:.2f}점</div>
-                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 10px 0;"/>
-                        <div style="font-size: 0.75rem; color: #cbd5e1; height: 36px; overflow: hidden; line-height: 1.3;">
-                            <strong>💡 기능성 요약:</strong> {fn_desc}
-                        </div>
-                        {market_product_html}
-                    </div>
-                    <a class="buy-btn" href="{detail_url}" target="_blank">
-                        🛒 제품 상세 보기 ↗
-                    </a>
-                </div>
-            """
+            # 마크다운 렌더링 시 들여쓰기로 인한 HTML 태그 노출 방지를 위해 문자열 앞의 들여쓰기를 원천 제거합니다.
+            card_html = f'''<div class="ecommerce-card" style="{card_style}">
+<div>
+<div style="position: relative; width: 100%; height: 160px; overflow: hidden; border-radius: 12px; margin-bottom: 12px; background: #FAFBFF; display: flex; justify-content: center; align-items: center;">
+<img src="{img_url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=\'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400\'"/>
+</div>
+<div style="margin-bottom: 8px; line-height: 1.8;">
+<span class="card-badge badge-goal">🎯 {first_goal}</span>
+<span class="card-badge badge-platform">{platform.upper()}</span>
+<span class="card-badge badge-form">💊 {prod_form}</span>
+</div>
+<div style="font-size: 0.8rem; color: #475569; margin-bottom: 2px;">{brand}</div>
+<h4 style="margin: 0 0 6px 0; color: #1F2937; font-size: 1rem; font-weight: 700; height: 42px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3;">{rank_prefix}. {name}</h4>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+<span style="font-size: 1.15rem; font-weight: 800; color: #5A83F1;">{price_str}</span>
+<div>
+<span class="rating-star">⭐ {rating:.1f}</span>
+<span style="font-size: 0.75rem; color: #64748b;">({reviews})</span>
+</div>
+</div>
+<div style="font-size: 0.75rem; color: #2C3281;">가산점 반영: +{bonus:.2f}점</div>
+<hr style="border: 0; border-top: 1px solid #E5EFFF; margin: 10px 0;"/>
+<div style="font-size: 0.75rem; color: #1F2937; height: 36px; overflow: hidden; line-height: 1.3;">
+<strong>💡 기능성 요약:</strong> {fn_desc}
+</div>
+{market_product_html}
+</div>
+<a class="buy-btn" href="{detail_url}" target="_blank">
+🛒 제품 상세 보기 ↗
+</a>
+</div>'''
             
             # 극적 연출을 위한 딜레이 (지연 없이 매끄럽게 흐르도록 0.03초 설정)
             time.sleep(0.03)
@@ -345,22 +341,19 @@ def render_product_grid(df_to_render, selected_row, db_data, survey):
                     # 시장 대표 인기 제품 매핑 (static)
                     _mkt_s = get_market_top_product(std_ing)
                     if _mkt_s:
-                        market_product_html_s = (
-                            '<hr style="border:0;border-top:1px solid rgba(255,255,255,0.08);margin:8px 0;"/>'
-                            '<div style="background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.25);'
-                            'border-radius:8px;padding:8px 10px;margin-top:4px;">'
-                            '<div style="font-size:0.7rem;color:#fbbf24;font-weight:700;margin-bottom:4px;">📌 시장 내 대표 인기 제품</div>'
-                            f'<div style="font-size:0.75rem;color:#e2e8f0;font-weight:600;">{_mkt_s["brand"]} {_mkt_s["name"]}</div>'
-                            f'<div style="font-size:0.75rem;color:#34d399;font-weight:700;margin-top:2px;">{_mkt_s["price"]}</div>'
-                            f'<a href="{_mkt_s["url"]}" target="_blank" style="font-size:0.68rem;color:#60a5fa;text-decoration:none;">🔗 네이버쇼핑 바로가기 ↗</a>'
-                            '</div>'
-                        )
+                        market_product_html_s = f'''<hr style="border:0;border-top:1px solid #E5EFFF;margin:8px 0;"/>
+<div style="background:#FAFBFF;border:1px solid #E5EFFF;border-radius:8px;padding:8px 10px;margin-top:4px;">
+<div style="font-size:0.7rem;color:#2C3281;font-weight:700;margin-bottom:4px;">📌 시장 내 대표 인기 제품</div>
+<div style="font-size:0.75rem;color:#1F2937;font-weight:600;">{_mkt_s["brand"]} {_mkt_s["name"]}</div>
+<div style="font-size:0.75rem;color:#5A83F1;font-weight:700;margin-top:2px;">{_mkt_s["price"]}</div>
+<a href="{_mkt_s["url"]}" target="_blank" style="font-size:0.68rem;color:#5A83F1;text-decoration:none;font-weight:700;">🔗 네이버쇼핑 바로가기 ↗</a>
+</div>'''
                     else:
                         market_product_html_s = ""
 
                     # 선택 강조 표시
                     is_selected = (row.name == selected_row.name)
-                    card_style = "border: 2px solid #10b981; background: rgba(16, 185, 129, 0.12); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);" if is_selected else ""
+                    card_style = "border: 2px solid #5A83F1; background: #E5EFFF; box-shadow: 0 10px 25px rgba(90, 131, 241, 0.15);" if is_selected else ""
                     rank_prefix = f"🔥 선택됨" if is_selected else f"추천"
                     
                     # 식약처 가이드 요약 추출
@@ -369,38 +362,37 @@ def render_product_grid(df_to_render, selected_row, db_data, survey):
                     if row_foodsafety:
                         fn_desc = row_foodsafety[0]['functionality'][:45] + "..." if len(row_foodsafety[0]['functionality']) > 45 else row_foodsafety[0]['functionality']
                     
-                    cols[c].markdown(f"""
-                        <div class="ecommerce-card" style="{card_style}">
-                            <div>
-                                <div style="position: relative; width: 100%; height: 160px; overflow: hidden; border-radius: 12px; margin-bottom: 12px; background: #0f172a; display: flex; justify-content: center; align-items: center;">
-                                    <img src="{img_url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400'"/>
-                                </div>
-                                <div style="margin-bottom: 8px; line-height: 1.8;">
-                                    <span class="card-badge badge-goal">🎯 {first_goal}</span>
-                                    <span class="card-badge badge-platform">{platform.upper()}</span>
-                                    <span class="card-badge badge-form">💊 {prod_form}</span>
-                                </div>
-                                <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 2px;">{brand}</div>
-                                <h4 style="margin: 0 0 6px 0; color: #f8fafc; font-size: 1rem; font-weight: 700; height: 42px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3;">{rank_prefix}. {name}</h4>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                    <span style="font-size: 1.15rem; font-weight: 800; color: #10b981;">{price_str}</span>
-                                    <div>
-                                        <span class="rating-star">⭐ {rating:.1f}</span>
-                                        <span style="font-size: 0.75rem; color: #64748b;">({reviews})</span>
-                                    </div>
-                                </div>
-                                <div style="font-size: 0.75rem; color: #34d399;">가산점 반영: +{bonus:.2f}점</div>
-                                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 10px 0;"/>
-                                <div style="font-size: 0.75rem; color: #cbd5e1; height: 36px; overflow: hidden; line-height: 1.3;">
-                                    <strong>💡 기능성 요약:</strong> {fn_desc}
-                                </div>
-                                {market_product_html_s}
-                            </div>
-                            <a class="buy-btn" href="{detail_url}" target="_blank">
-                                🛒 제품 상세 보기 ↗
-                            </a>
-                        </div>
-                    """, unsafe_allow_html=True)
+                    static_card_html = f'''<div class="ecommerce-card" style="{card_style}">
+<div>
+<div style="position: relative; width: 100%; height: 160px; overflow: hidden; border-radius: 12px; margin-bottom: 12px; background: #FAFBFF; display: flex; justify-content: center; align-items: center;">
+<img src="{img_url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=\'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400\'"/>
+</div>
+<div style="margin-bottom: 8px; line-height: 1.8;">
+<span class="card-badge badge-goal">🎯 {first_goal}</span>
+<span class="card-badge badge-platform">{platform.upper()}</span>
+<span class="card-badge badge-form">💊 {prod_form}</span>
+</div>
+<div style="font-size: 0.8rem; color: #475569; margin-bottom: 2px;">{brand}</div>
+<h4 style="margin: 0 0 6px 0; color: #1F2937; font-size: 1rem; font-weight: 700; height: 42px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3;">{rank_prefix}. {name}</h4>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+<span style="font-size: 1.15rem; font-weight: 800; color: #5A83F1;">{price_str}</span>
+<div>
+<span class="rating-star">⭐ {rating:.1f}</span>
+<span style="font-size: 0.75rem; color: #64748b;">({reviews})</span>
+</div>
+</div>
+<div style="font-size: 0.75rem; color: #2C3281;">가산점 반영: +{bonus:.2f}점</div>
+<hr style="border: 0; border-top: 1px solid #E5EFFF; margin: 10px 0;"/>
+<div style="font-size: 0.75rem; color: #1F2937; height: 36px; overflow: hidden; line-height: 1.3;">
+<strong>💡 기능성 요약:</strong> {fn_desc}
+</div>
+{market_product_html_s}
+</div>
+<a class="buy-btn" href="{detail_url}" target="_blank">
+🛒 제품 상세 보기 ↗
+</a>
+</div>'''
+                    cols[c].markdown(static_card_html, unsafe_allow_html=True)
 
 def main():
     # 프리미엄 CSS 스타일 커스텀 주입
@@ -408,13 +400,27 @@ def main():
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap');
 
-        /* ========== GNB 헤더 ========== */
+        /* ========== 전역 테마 하드 고정 (화이트 모드 및 블루 계열) ========== */
+        html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
+            background-color: #FFFFFF !important;
+            color: #1F2937 !important;
+        }
+        h1, h2, h3, h4, h5, h6, p, span, label, li, div, button {
+            color: #1F2937 !important;
+            font-family: 'Outfit', 'Noto Sans KR', sans-serif !important;
+        }
+        [data-testid="stSidebar"] {
+            background-color: #FAFBFF !important;
+            border-right: 1px solid #E5EFFF !important;
+        }
+        
+        /* ========== GNB 헤더 (화이트 테마 조화) ========== */
         .gnb-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(10, 17, 35, 0.97);
-            border-bottom: 1px solid rgba(16, 185, 129, 0.25);
+            background: #FFFFFF;
+            border-bottom: 2px solid #E5EFFF;
             padding: 14px 32px;
             position: sticky;
             top: 0;
@@ -422,13 +428,13 @@ def main():
             backdrop-filter: blur(14px);
             margin-bottom: 24px;
             border-radius: 0 0 16px 16px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 24px rgba(90, 131, 241, 0.06);
         }
         .gnb-logo {
             font-family: 'Outfit', sans-serif;
             font-size: 1.35rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #10b981, #3b82f6);
+            background: linear-gradient(135deg, #5A83F1, #2C3281);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: -0.5px;
@@ -442,7 +448,7 @@ def main():
             font-family: 'Noto Sans KR', sans-serif;
             font-size: 0.82rem;
             font-weight: 600;
-            color: #94a3b8;
+            color: #475569;
             padding: 6px 14px;
             border-radius: 8px;
             text-decoration: none;
@@ -451,27 +457,27 @@ def main():
             cursor: pointer;
         }
         .gnb-link:hover {
-            color: #f1f5f9;
-            background: rgba(255,255,255,0.06);
-            border-color: rgba(255,255,255,0.1);
+            color: #2C3281;
+            background: #E5EFFF;
+            border-color: #E5EFFF;
         }
         .gnb-link-highlight {
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.35);
-            background: rgba(16, 185, 129, 0.07);
+            color: #5A83F1;
+            border: 1px solid rgba(90, 131, 241, 0.35);
+            background: rgba(90, 131, 241, 0.07);
         }
         .gnb-link-highlight:hover {
-            background: rgba(16, 185, 129, 0.15);
-            border-color: rgba(16, 185, 129, 0.6);
-            color: #34d399;
+            background: rgba(90, 131, 241, 0.15);
+            border-color: #5A83F1;
+            color: #2C3281;
         }
 
-        /* ========== 기존 카드/타이틀 ========== */
+        /* ========== 기존 카드/타이틀 (화이트 및 블루칩 기반 개편) ========== */
         .main-title {
             font-family: 'Outfit', 'Noto Sans KR', sans-serif;
             font-size: 2.4rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #10b981, #3b82f6);
+            background: linear-gradient(135deg, #5A83F1, #2C3281);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 4px;
@@ -479,7 +485,7 @@ def main():
         .sub-title {
             font-family: 'Noto Sans KR', sans-serif;
             font-size: 1rem;
-            color: #94a3b8;
+            color: #475569;
             margin-bottom: 5px;
         }
         .rating-star {
@@ -488,8 +494,8 @@ def main():
             font-size: 1.1rem;
         }
         .ecommerce-card {
-            background: rgba(30, 41, 59, 0.48);
-            border: 1px solid rgba(255, 255, 255, 0.09);
+            background: #FAFBFF !important;
+            border: 1px solid #E5EFFF !important;
             border-radius: 20px;
             padding: 18px;
             margin-bottom: 24px;
@@ -498,12 +504,12 @@ def main():
             flex-direction: column;
             justify-content: space-between;
             height: 580px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 6px 20px rgba(90, 131, 241, 0.04);
         }
         .ecommerce-card:hover {
             transform: translateY(-9px);
-            box-shadow: 0 22px 40px rgba(16, 185, 129, 0.22);
-            border-color: rgba(16, 185, 129, 0.5);
+            box-shadow: 0 22px 40px rgba(90, 131, 241, 0.12) !important;
+            border-color: #5A83F1 !important;
         }
         .card-badge {
             font-size: 0.7rem;
@@ -515,14 +521,14 @@ def main():
             transition: all 0.18s ease;
         }
         .card-badge:hover { opacity: 0.8; transform: scale(1.04); }
-        .badge-goal { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
-        .badge-platform { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-        .badge-form { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .badge-goal { background: #E5EFFF; color: #2C3281; }
+        .badge-platform { background: rgba(90, 131, 241, 0.15); color: #5A83F1; }
+        .badge-form { background: #FAFBFF; color: #475569; border: 1px solid #E5EFFF; }
         .buy-btn {
             display: block;
             width: 100%;
             text-align: center;
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, #5A83F1, #2C3281);
             color: white !important;
             padding: 10px 0;
             border-radius: 10px;
@@ -531,32 +537,32 @@ def main():
             font-size: 0.88rem;
             transition: all 0.22s ease;
             margin-top: 10px;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            box-shadow: 0 4px 12px rgba(90, 131, 241, 0.2);
         }
         .buy-btn:hover {
             opacity: 0.88;
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+            box-shadow: 0 8px 20px rgba(90, 131, 241, 0.35);
         }
 
         /* ========== 유틸리티 사이드카드 ========== */
         .side-util-card {
-            background: rgba(15, 23, 42, 0.55);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: #FAFBFF !important;
+            border: 1px solid #E5EFFF !important;
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 18px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.28);
+            box-shadow: 0 6px 20px rgba(90, 131, 241, 0.04);
             transition: box-shadow 0.25s ease, border-color 0.25s ease;
         }
         .side-util-card:hover {
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.12);
-            border-color: rgba(59, 130, 246, 0.25);
+            box-shadow: 0 10px 30px rgba(90, 131, 241, 0.1);
+            border-color: #5A83F1;
         }
         .side-section-label {
             font-size: 0.72rem;
             font-weight: 700;
-            color: #475569;
+            color: #2C3281;
             letter-spacing: 1.2px;
             text-transform: uppercase;
             margin-bottom: 10px;
@@ -579,28 +585,28 @@ def main():
             transition: all 0.2s ease;
         }
         .outlink-btn-coupang {
-            background: rgba(255, 93, 0, 0.1);
+            background: rgba(255, 93, 0, 0.07);
             color: #ff7a30;
-            border: 1px solid rgba(255, 93, 0, 0.3);
+            border: 1px solid rgba(255, 93, 0, 0.2);
         }
-        .outlink-btn-coupang:hover { background: rgba(255, 93, 0, 0.2); transform: translateY(-2px); }
+        .outlink-btn-coupang:hover { background: rgba(255, 93, 0, 0.15); transform: translateY(-2px); }
         .outlink-btn-naver {
-            background: rgba(3, 199, 90, 0.1);
+            background: rgba(3, 199, 90, 0.07);
             color: #03c75a;
-            border: 1px solid rgba(3, 199, 90, 0.3);
+            border: 1px solid rgba(3, 199, 90, 0.2);
         }
-        .outlink-btn-naver:hover { background: rgba(3, 199, 90, 0.2); transform: translateY(-2px); }
+        .outlink-btn-naver:hover { background: rgba(3, 199, 90, 0.15); transform: translateY(-2px); }
         .outlink-btn-iherb {
-            background: rgba(91, 192, 79, 0.1);
+            background: rgba(91, 192, 79, 0.07);
             color: #5bc04f;
-            border: 1px solid rgba(91, 192, 79, 0.3);
+            border: 1px solid rgba(91, 192, 79, 0.2);
         }
-        .outlink-btn-iherb:hover { background: rgba(91, 192, 79, 0.2); transform: translateY(-2px); }
+        .outlink-btn-iherb:hover { background: rgba(91, 192, 79, 0.15); transform: translateY(-2px); }
 
         /* ========== 엔터프라이즈 푸터 ========== */
         .enterprise-footer {
-            background: linear-gradient(135deg, #0a1120, #0d1f2d);
-            border-top: 1px solid rgba(16, 185, 129, 0.2);
+            background: #FAFBFF !important;
+            border-top: 2px solid #E5EFFF;
             border-radius: 20px 20px 0 0;
             padding: 28px 40px;
             margin-top: 40px;
@@ -610,7 +616,7 @@ def main():
             font-family: 'Outfit', sans-serif;
             font-size: 1.1rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #10b981, #3b82f6);
+            background: linear-gradient(135deg, #5A83F1, #2C3281);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 8px;
@@ -623,7 +629,7 @@ def main():
         }
         .footer-divider {
             border: 0;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            border-top: 1px solid #E5EFFF;
             margin: 14px 0;
         }
         </style>
@@ -642,59 +648,58 @@ def main():
         </div>
     """, unsafe_allow_html=True)
 
-    # 1. 사이드바 - 간이 로그인/회원가입 데모 UI 배치
-    st.sidebar.markdown("### 🔑 멤버십 서비스")
+    # ===== 최상단 GNB 연동 백오피스 & 멤버십 로그인 통합 인증 센터 =====
     if 'user_logged_in' not in st.session_state:
         st.session_state.user_logged_in = False
     if 'logged_in_username' not in st.session_state:
         st.session_state.logged_in_username = ""
-        
-    if not st.session_state.user_logged_in:
-        st.sidebar.info("🔑 로그인하여 장바구니 저장하기 (추후 연동)")
-        tab_login, tab_register = st.sidebar.tabs(["로그인 데모", "회원가입 데모"])
-        
-        with tab_login:
-            login_id = st.text_input("아이디:", key="login_id")
-            login_pw = st.text_input("비밀번호:", type="password", key="login_pw")
-            if st.button("로그인"):
-                if login_id.strip() and login_pw.strip():
-                    st.session_state.user_logged_in = True
-                    st.session_state.logged_in_username = login_id.strip()
-                    st.sidebar.success(f"🎉 {login_id}님 로그인 성공!")
-                    st.rerun()
-                else:
-                    st.sidebar.error("아이디와 비밀번호를 입력해 주세요.")
-                    
-        with tab_register:
-            reg_id = st.text_input("가입할 아이디:", key="reg_id")
-            reg_pw = st.text_input("비밀번호 설정:", type="password", key="reg_pw")
-            reg_pw_confirm = st.text_input("비밀번호 확인:", type="password", key="reg_pw_confirm")
-            if st.button("간이 회원가입"):
-                if reg_id.strip() and reg_pw.strip():
-                    if reg_pw == reg_pw_confirm:
-                        st.sidebar.success("회원가입 성공! 로그인 탭에서 입력해 주세요.")
-                    else:
-                        st.sidebar.error("비밀번호가 일치하지 않습니다.")
-                else:
-                    st.sidebar.error("모든 정보를 올바르게 기입해 주세요.")
-    else:
-        st.sidebar.markdown(f"**👤 회원: `{st.session_state.logged_in_username}`님**")
-        st.sidebar.write("✅ 장바구니 실시간 동기화 상태 활성화")
-        if st.button("로그아웃"):
-            st.session_state.user_logged_in = False
-            st.session_state.logged_in_username = ""
-            st.rerun()
+    if 'admin_password_val' not in st.session_state:
+        st.session_state.admin_password_val = ""
 
-    # 사이드바 하단 - 마스터 패스워드 인증 및 백오피스 동적 라우팅 구성
-    st.sidebar.markdown("---")
-    admin_password = st.sidebar.text_input(
-        "🔒 시스템 관리자 인증",
-        type="password",
-        help="우리 팀원 전용 백오피스 인증 창입니다."
-    )
-    
-    admin_mode = (admin_password == "nutrifit2026!")
-    
+    with st.expander("🔑 멤버십 로그인 & 🔒 백오피스 관리자 인증 패널", expanded=False):
+        tab_login, tab_register, tab_admin = st.tabs(["🔑 로그인 데모", "📝 회원가입 데모", "🔒 시스템 관리자 인증"])
+        with tab_login:
+            if not st.session_state.user_logged_in:
+                login_id_val = st.text_input("아이디:", key="login_id")
+                login_pw_val = st.text_input("비밀번호:", type="password", key="login_pw")
+                if st.button("로그인", key="login_btn"):
+                    if login_id_val.strip() and login_pw_val.strip():
+                        st.session_state.user_logged_in = True
+                        st.session_state.logged_in_username = login_id_val.strip()
+                        st.success(f"🎉 {login_id_val}님 로그인 성공!")
+                        st.rerun()
+                    else:
+                        st.error("아이디와 비밀번호를 입력해 주세요.")
+            else:
+                st.markdown(f"**👤 현재 로그인 계정: `{st.session_state.logged_in_username}`님**")
+                st.write("✅ 장바구니 실시간 동기화 상태 활성화")
+                if st.button("로그아웃", key="logout_btn"):
+                    st.session_state.user_logged_in = False
+                    st.session_state.logged_in_username = ""
+                    st.rerun()
+        with tab_register:
+            reg_id_val = st.text_input("가입할 아이디:", key="reg_id")
+            reg_pw_val = st.text_input("비밀번호 설정:", type="password", key="reg_pw")
+            reg_pw_confirm_val = st.text_input("비밀번호 확인:", type="password", key="reg_pw_confirm")
+            if st.button("간이 회원가입", key="register_btn"):
+                if reg_id_val.strip() and reg_pw_val.strip():
+                    if reg_pw_val == reg_pw_confirm_val:
+                        st.success("회원가입 성공! 로그인 탭에서 입력해 주세요.")
+                    else:
+                        st.error("비밀번호가 일치하지 않습니다.")
+                else:
+                    st.error("모든 정보를 올바르게 기입해 주세요.")
+        with tab_admin:
+            admin_password_input = st.text_input("시스템 관리자 인증 비밀번호:", type="password", value=st.session_state.admin_password_val, help="우리 팀원 전용 백오피스 인증 창입니다.", key="admin_pwd_input")
+            if admin_password_input != st.session_state.admin_password_val:
+                st.session_state.admin_password_val = admin_password_input
+                st.rerun()
+            if st.session_state.admin_password_val == "nutrifit2026!":
+                st.success("🔑 관리자 인증 성공! 백오피스 메뉴가 활성화되었습니다.")
+            elif st.session_state.admin_password_val:
+                st.error("비밀번호가 일치하지 않습니다.")
+
+    admin_mode = (st.session_state.admin_password_val == "nutrifit2026!")
     if admin_mode:
         st.sidebar.success("🔑 관리자 인증 성공! 백오피스가 활성화되었습니다.")
         
@@ -1448,25 +1453,23 @@ def main():
                                         f'<a href="{comp_mkt["url"]}" target="_blank" style="font-size:0.68rem;color:#60a5fa;text-decoration:none;">🔗 네이버쇼핑 바로가기 ↗</a>'
                                         f'</div>'
                                     )
-                                st.markdown(f"""
-                                    <div style="background:rgba(30,41,59,0.55);border:2px solid #3b82f6;border-radius:20px;padding:20px;min-height:390px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 24px rgba(59,130,246,0.15);">
-                                        <div>
-                                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                                                <span style="font-size:0.8rem;color:#60a5fa;background:rgba(59,130,246,0.15);padding:2px 8px;border-radius:6px;font-weight:700;">⚖️ 비교 {idx_c+1}</span>
-                                                <span style="font-size:0.75rem;color:#94a3b8;">{comp_platform.upper()}</span>
-                                            </div>
-                                            <div style="font-size:0.78rem;color:#94a3b8;margin-bottom:2px;">{comp_brand}</div>
-                                            <h4 style="margin:0 0 8px 0;color:#f8fafc;font-size:0.95rem;font-weight:700;height:38px;overflow:hidden;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">{comp_name}</h4>
-                                            <div style="font-size:1.18rem;font-weight:800;color:#10b981;margin-bottom:6px;">{comp_price_str}</div>
-                                            <div style="font-size:0.82rem;color:#fbbf24;margin-bottom:10px;">⭐ {comp_rating:.1f} <span style="color:#64748b;">({comp_reviews:,}개 리뷰)</span></div>
-                                            <div style="font-size:0.82rem;color:#cbd5e1;margin-bottom:8px;line-height:1.3;">🧬 <strong>표준성분:</strong> `{comp_std_ing}`</div>
-                                            <hr style="border:0;border-top:1px solid rgba(255,255,255,0.06);margin:10px 0;"/>
-                                            <div style="font-size:0.78rem;color:#cbd5e1;height:90px;overflow-y:auto;line-height:1.4;padding-right:4px;"><strong>📜 식약처 기능성:</strong> {comp_fn_desc}</div>
-                                            {mkt_badge_html}
-                                        </div>
-                                        <a class="buy-btn" href="{primary_url}" target="_blank" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);margin-top:15px;">🛒 제품 상세 보기 ↗</a>
-                                    </div>
-                                """, unsafe_allow_html=True)
+                                st.markdown(f'''<div style="background:#FAFBFF;border:2px solid #5A83F1;border-radius:20px;padding:20px;min-height:390px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 24px rgba(90,131,241,0.06);">
+<div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+<span style="font-size:0.8rem;color:#2C3281;background:#E5EFFF;padding:2px 8px;border-radius:6px;font-weight:700;">⚖️ 비교 {idx_c+1}</span>
+<span style="font-size:0.75rem;color:#475569;">{comp_platform.upper()}</span>
+</div>
+<div style="font-size:0.78rem;color:#475569;margin-bottom:2px;">{comp_brand}</div>
+<h4 style="margin:0 0 8px 0;color:#1F2937;font-size:0.95rem;font-weight:700;height:38px;overflow:hidden;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">{comp_name}</h4>
+<div style="font-size:1.18rem;font-weight:800;color:#5A83F1;margin-bottom:6px;">{comp_price_str}</div>
+<div style="font-size:0.82rem;color:#fbbf24;margin-bottom:10px;">⭐ {comp_rating:.1f} <span style="color:#64748b;">({comp_reviews:,}개 리뷰)</span></div>
+<div style="font-size:0.82rem;color:#1F2937;margin-bottom:8px;line-height:1.3;">🧬 <strong>표준성분:</strong> `{comp_std_ing}`</div>
+<hr style="border:0;border-top:1px solid #E5EFFF;margin:10px 0;"/>
+<div style="font-size:0.78rem;color:#1F2937;height:90px;overflow-y:auto;line-height:1.4;padding-right:4px;"><strong>📜 식약처 기능성:</strong> {comp_fn_desc}</div>
+{mkt_badge_html}
+</div>
+<a class="buy-btn" href="{primary_url}" target="_blank" style="background:linear-gradient(135deg,#5A83F1,#2C3281);margin-top:15px;">🛒 제품 상세 보기 ↗</a>
+</div>''', unsafe_allow_html=True)
                         except Exception as e:
                             st.error(f"비교 처리 중 오류: {e}")
 
