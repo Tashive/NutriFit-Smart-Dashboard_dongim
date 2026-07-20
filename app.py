@@ -570,6 +570,26 @@ def main():
             color: #FFFFFF !important;
         }
 
+        .main-title {
+            font-family: 'Outfit', 'Noto Sans KR', sans-serif !important;
+            font-size: 3.5rem !important;
+            font-weight: 800 !important;
+            background: linear-gradient(90deg, #2C3281, #5A83F1) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            margin-bottom: 16px !important;
+            line-height: 1.15 !important;
+            letter-spacing: -1px !important;
+        }
+        .sub-title {
+            font-family: 'Noto Sans KR', sans-serif !important;
+            font-size: 16px !important;
+            color: #4B5563 !important;
+            margin-bottom: 40px !important;
+            font-weight: 500 !important;
+            letter-spacing: -0.2px !important;
+        }
+
         /* ========== 화이트 글래스모피즘 카드 및 스무스 이징 호버 ========== */
         .ecommerce-card {
             background: rgba(255, 255, 255, 0.9) !important;
