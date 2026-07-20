@@ -1287,6 +1287,19 @@ def main():
                             comp_fn_desc = comp_foodsafety[0]['functionality']
                         
                         with cols_compare[idx_c]:
+                            # 시장 탑티어 인기 제품 URL 우선 적용
+                            primary_url = comp_mkt["url"] if comp_mkt else comp_detail_url
+                            mkt_badge_html = ""
+                            if comp_mkt:
+                                mkt_badge_html = (
+                                    f'<div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);'
+                                    f'border-radius:10px;padding:10px 12px;margin-top:10px;">'
+                                    f'<div style="font-size:0.68rem;color:#fbbf24;font-weight:700;margin-bottom:4px;">📌 시장 내 대표 인기 제품</div>'
+                                    f'<div style="font-size:0.78rem;color:#e2e8f0;font-weight:600;">{comp_mkt["brand"]} {comp_mkt["name"]}</div>'
+                                    f'<div style="font-size:0.8rem;color:#34d399;font-weight:700;margin-top:2px;">{comp_mkt["price"]}</div>'
+                                    f'<a href="{comp_mkt["url"]}" target="_blank" style="font-size:0.68rem;color:#60a5fa;text-decoration:none;">🔗 네이버쇼핑 바로가기 ↗</a>'
+                                    f'</div>'
+                                )
                             st.markdown(f"""
                                 <div style="background: rgba(30, 41, 59, 0.55); border: 2px solid #3b82f6; border-radius: 16px; padding: 20px; min-height: 390px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);">
                                     <div>
@@ -1303,13 +1316,14 @@ def main():
                                         <div style="font-size: 0.78rem; color: #cbd5e1; height: 90px; overflow-y: auto; line-height: 1.4; padding-right: 4px;">
                                             <strong>📜 식약처 기능성:</strong> {comp_fn_desc}
                                         </div>
+                                        {mkt_badge_html}
                                     </div>
-                                    <a class="buy-btn" href="{comp_detail_url}" target="_blank" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); margin-top: 15px;">
+                                    <a class="buy-btn" href="{primary_url}" target="_blank" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); margin-top: 15px;">
                                         🛒 제품 상세 보기 ↗
                                     </a>
-                                    {f'<a href="{comp_mkt["url"]}" target="_blank" style="display:block;text-align:center;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.35);color:#fbbf24;padding:7px;border-radius:8px;text-decoration:none;font-size:0.75rem;font-weight:700;margin-top:8px;">📌 {comp_mkt["brand"]} 대표 인기 제품 ↗</a>' if comp_mkt else ''}
                                 </div>
                             """, unsafe_allow_html=True)
+
                     except Exception as e:
                         st.error(f"비교 처리 중 오류: {e}")
 
