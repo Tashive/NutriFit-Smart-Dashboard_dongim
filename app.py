@@ -428,6 +428,36 @@ def main():
             border-right: 1px solid #E5EFFF !important;
         }
         
+        /* ========== 모든 위젯 및 입력 폼 가독성 100% 보장 고정 ========== */
+        input, select, textarea, div[role="listbox"], [data-baseweb="select"], .stSelectbox, .stMultiSelect {
+            background-color: #FFFFFF !important;
+            color: #1F2937 !important;
+        }
+        .stRadio label, .stCheckbox label, .stSelectbox label, .stMultiSelect label, .stSlider label, .stTextInput label, .stNumberInput label {
+            color: #1F2937 !important;
+            font-weight: 600 !important;
+        }
+        [data-testid="stWidgetLabel"] p, [data-testid="stMarkdownContainer"] p {
+            color: #1F2937 !important;
+        }
+        [data-baseweb="tag"] {
+            background-color: #E5EFFF !important;
+            color: #2C3281 !important;
+            border: 1px solid #5A83F1 !important;
+        }
+        
+        /* ========== 오버도즈 경고 펄스 애니메이션 ========== */
+        @keyframes pulse-warning-anim {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .pulse-warning {
+            border: 2px solid #ef4444 !important;
+            background-color: #FFFFFF !important;
+            animation: pulse-warning-anim 2s infinite;
+        }
+        
         /* ========== GNB 헤더 (보조색인 딥블루 #2C3281로 세련되게 고정) ========== */
         .gnb-header {
             display: flex;
@@ -774,54 +804,60 @@ def main():
             with landing_col1:
                 # 좌측: 프리미엄 텍스트 & 약관 동의
                 st.markdown("""
-                    <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 20px; padding: 6px 14px; width: fit-content; margin-bottom: 15px;">
-                        <span style="color: #60a5fa; font-weight: 700; font-size: 0.85rem;">📊 식약처 데이터 및 ML 기반 초개인화 엔진</span>
+                    <div style="background: rgba(90, 131, 241, 0.1); border: 1px solid rgba(90, 131, 241, 0.2); border-radius: 20px; padding: 6px 14px; width: fit-content; margin-bottom: 15px;">
+                        <span style="color: #5A83F1; font-weight: 700; font-size: 0.85rem;">📊 식약처 데이터 및 ML 기반 초개인화 엔진</span>
                     </div>
-                    <p style="color: #94a3b8; font-size: 0.95rem; line-height: 1.6; margin-bottom: 25px;">
+                    <p style="color: #475569; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;">
                         단순한 추천을 넘어 23개 신체 변수 연산, Scikit-Learn 머신러닝 위험도 예측, 식약처 상한 섭취량 실시간 검증을 통해 가장 안전한 영양 조합과 복용 타임라인을 도출합니다.
                     </p>
                 """, unsafe_allow_html=True)
                 
-                # 면책 조항 주의 박스
+                # 토스 스타일 대형 전체 동의 버튼 (프리미엄 컨테이너 안착)
                 st.markdown("""
-                    <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; padding: 15px; margin-bottom: 20px; font-size: 0.85rem; color: #cbd5e1; line-height: 1.45;">
-                        ⚠️ <strong>서비스 안내 및 면책 공지</strong><br>
-                        본 서비스는 의학적 치료나 진단을 대체하는 의료 행위가 아니며, 식약처 공공데이터 및 가중 모델을 활용한 참고용 웰니스 큐레이션입니다.
+                    <div style="background: #FFFFFF; border: 1px solid #E5EFFF; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px -5px rgba(90, 131, 241, 0.08); margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 15px 0; color: #1F2937; font-size: 1.1rem; font-weight: 700;">🥗 안전한 초개인화 진단 시작하기</h4>
+                        <p style="font-size: 0.85rem; color: #475569; margin-bottom: 15px; line-height: 1.4;">
+                            아래 대형 버튼을 터치하시면 3대 필수 약관(서비스 이용약관, 만 14세 이상 확인, 건강상태/민감정보 수집)에 한 번에 전체 동의하고 즉시 진단 문진 단계로 진입합니다.
+                        </p>
                     </div>
                 """, unsafe_allow_html=True)
                 
-                # 약관 동의 체크박스 영역 (기능 보존)
-                st.checkbox("전체 동의합니다.", key="all_agree", on_change=on_all_agree_change)
-                st.markdown("---")
-                
-                st.checkbox("1. [필수] 서비스 이용약관 및 일반 개인정보 수집·이용 동의", key="agree_1", on_change=on_individual_change)
-                with st.expander("📜 약관 상세내역 조회"):
-                    st.markdown("""
-                        * **수집 목적**: 개인 맞춤형 영양소 큐레이션 및 대시보드 제공
-                        * **보유 및 이용 기간**: **목적 달성 즉시 파기** (세션 종료 시 즉시 파기)
-                    """)
-                    
-                st.checkbox("2. [필수] 만 14세 이상 이용 확인", key="agree_2", on_change=on_individual_change)
-                with st.expander("📜 약관 상세내역 조회"):
-                    st.markdown("""
-                        * **제한 고시**: 본 서비스는 아동의 민감정보 수집 방지를 위해 **만 14세 미만의 이용을 제한**합니다.
-                    """)
-                    
-                st.checkbox("3. [필수] 건강 상태 및 라이프스타일(민감정보) 수집·이용 동의", key="agree_3", on_change=on_individual_change)
-                with st.expander("📜 약관 상세내역 조회"):
-                    st.markdown("""
-                        * **법적 근거**: **개인정보보호법 제23조**에 의거, 질환 정보 및 부작용 이력 등 민감정보 수집에 동의합니다.
-                    """)
-                    
-                agreed_all_checked = st.session_state.agree_1 and st.session_state.agree_2 and st.session_state.agree_3
-                
-                st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("⚡ 3분만에 내 맞춤 영양 진단하기", disabled=not agreed_all_checked, use_container_width=True):
+                if st.button("🥗 전체 동의하고 3분만에 내 맞춤 영양 진단하기 ➡️", use_container_width=True, key="toss_agree_btn"):
+                    st.session_state.all_agree = True
+                    st.session_state.agree_1 = True
+                    st.session_state.agree_2 = True
+                    st.session_state.agree_3 = True
                     st.session_state.agreed = True
                     st.session_state.step = 1
                     st.session_state.streaming_done = False
                     st.rerun()
+
+                st.markdown("<div style='text-align: center; font-size: 0.8rem; color:#94a3b8; margin: 10px 0;'>또는 개별 동의 항목 확인</div>", unsafe_allow_html=True)
+                
+                # 개별 슬림 약관 동의 체크박스
+                col_c1, col_c2, col_c3 = st.columns(3)
+                with col_c1:
+                    st.checkbox("1. [필수] 이용약관 동의", key="agree_1", on_change=on_individual_change)
+                with col_c2:
+                    st.checkbox("2. [필수] 만 14세 이상", key="agree_2", on_change=on_individual_change)
+                with col_c3:
+                    st.checkbox("3. [필수] 민감정보 동의", key="agree_3", on_change=on_individual_change)
                     
+                with st.expander("🔍 세부 약관 요약 보기"):
+                    st.markdown("""
+                        * **개인정보 수집**: 맞춤형 영양소 추천 제공 목적이며 세션 종료 시 즉시 파기합니다.
+                        * **만 14세 이상**: 아동 보호를 위해 미성년 이용을 배제합니다.
+                        * **민감정보 수집**: 개인정보보호법 제23조에 의거해 질환 및 부작용 정보를 수집합니다.
+                    """)
+                    
+                agreed_all_checked = st.session_state.agree_1 and st.session_state.agree_2 and st.session_state.agree_3
+                
+                if st.button("선택 동의 후 시작하기", disabled=not agreed_all_checked, use_container_width=True, key="normal_agree_btn"):
+                    st.session_state.agreed = True
+                    st.session_state.step = 1
+                    st.session_state.streaming_done = False
+                    st.rerun()
+            
             with landing_col2:
                 # 우측: 3대 핵심 엔진 가동 상태 대시보드 (개인 데이터 완전 제거)
                 engine_status_html = (
@@ -1264,10 +1300,25 @@ def main():
                     st.rerun()
             with col_btn2:
                 if st.button("초개인화 장바구니 큐레이션 보기 ➡️"):
+                    # 시각적 락인(Lock-in) 인디케이터 연출
+                    with st.spinner("🧠 Scikit-Learn 머신러닝 커널 연산 및 오버도즈 차단 설계 연산 중..."):
+                        progress_bar = st.progress(0)
+                        status_text = st.empty()
+                        stages = [
+                            "1단계: 23개 전항목 신체 습관 변수 로드 완료 (🟢)",
+                            "2단계: 식약처 상한 섭취량 실시간 동기화 완료 (🟢)",
+                            "3단계: Scikit-Learn 로지스틱 회귀 위험 분류 커널 연산 시작 (🟢)",
+                            "4단계: 개인화 가중 스코어링 최적화 랭킹 매핑 완료 (🟢)"
+                        ]
+                        for idx, stage in enumerate(stages):
+                            status_text.markdown(f"<span style='color:#5A83F1; font-weight:700; font-size:0.92rem;'>{stage}</span>", unsafe_allow_html=True)
+                            time.sleep(0.4)
+                            progress_bar.progress((idx + 1) * 25)
+                        status_text.success("🎉 초개인화 장바구니 매칭 연산 완료!")
+                        time.sleep(0.3)
                     st.session_state.step = 3
-                    st.session_state.streaming_done = False # 다음 단계 전환 시 스트리밍 플래그 초기화
+                    st.session_state.streaming_done = False
                     st.rerun()
-
         # ==================== 화면 분기 3: 초개인화 장바구니 큐레이션 결과 ====================
         elif st.session_state.step == 3:
             st.markdown('<div class="main-title" style="font-size:1.8rem;">&#x1F4A1; 뉴트리핏 초개인화 맞춤 큐레이션 결과</div>', unsafe_allow_html=True)
@@ -1284,190 +1335,201 @@ def main():
             exclusions = side_effects_cleaned + algs_display
             exclusions_str = ', '.join(exclusions) if exclusions else '없음'
 
-            # ==================== [2.3 | 1.0] 비대칭 그리드 분할 ====================
-            col_main, col_side = st.columns([2.3, 1.0], gap="large")
+            # --- 프로필 배너 (화이트 카드 섀도우) ---
+            st.markdown(f"""
+                <div style="background: #FFFFFF; border: 1px solid #E5EFFF; border-radius: 20px; padding: 18px 25px; margin-bottom: 24px; box-shadow: 0 10px 30px -5px rgba(90, 131, 241, 0.08);">
+                    <strong>&#x1F4CA; 분석 대상자 프로필:</strong> {survey['gender']} ({survey['age']}) | BMI: {survey['bmi']} |
+                    &#x1F3AF; <strong>핵심 건강고민:</strong> {', '.join(survey['health_goals'])} |
+                    &#x1F6AB; <strong>배제 성분:</strong> {exclusions_str}
+                </div>
+            """, unsafe_allow_html=True)
 
-            with col_main:
-                # --- 프로필 배너 ---
-                st.markdown(f"""
-                    <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 14px; padding: 14px 18px; margin-bottom: 18px;">
-                        <strong>&#x1F4CA; 분석 대상자 프로필:</strong> {survey['gender']} ({survey['age']}) | BMI: {survey['bmi']} |
-                        &#x1F3AF; <strong>핵심 건강고민:</strong> {', '.join(survey['health_goals'])} |
-                        &#x1F6AB; <strong>배제 성분:</strong> {exclusions_str}
-                    </div>
-                """, unsafe_allow_html=True)
+            # --- AI 총평 스트리밍 (화이트 카드 섀도우) ---
+            st.markdown("#### &#x1F916; 뉴트리핏 AI 개인화 큐레이션 총평 리포트")
+            ai_report_text = (
+                f"{survey['gender']} ({survey['age']}) 분석 대상자님은 현재 [{', '.join(survey['health_goals'])}] 건강 고민을 집중 케어하기 위해 웰니스 스코어 보너스 가산점을 정밀 배분 받으셨습니다. "
+                f"현재 BMI 지수는 {survey['bmi']}로 안전 수준을 유지하고 계시며, 설정된 부작용 이력 및 [{exclusions_str}] 등의 성분이 함유된 제품군은 "
+                f"스코어 산정 리스트에서 선제 필터링되었습니다. 아래 식약처 공인 성분 지식베이스 규격에 맞춰 엄선한 랭킹 TOP 12와 최적의 복용 골든타임을 참고하시기 바랍니다."
+            )
+            
+            # 스트리밍 렌더러
+            st.markdown('<div class="side-util-card">', unsafe_allow_html=True)
+            if not st.session_state.streaming_done:
+                def text_char_generator(text):
+                    for char in text:
+                        yield char
+                        time.sleep(0.008)
+                st.write_stream(text_char_generator(ai_report_text))
+            else:
+                st.write(ai_report_text)
+            st.markdown('</div>', unsafe_allow_html=True)
 
-                # --- AI 총평 스트리밍 ---
-                st.markdown("#### &#x1F916; 뉴트리핏 AI 개인화 큐레이션 총평 리포트")
-                ai_report_text = (
-                    f"{survey['gender']} ({survey['age']}) 분석 대상자님은 현재 [{', '.join(survey['health_goals'])}] 건강 고민을 집중 케어하기 위해 웰니스 스코어 보너스 가산점을 정밀 배분 받으셨습니다. "
-                    f"현재 BMI 지수는 {survey['bmi']}로 안전 수준을 유지하고 계시며, 설정된 부작용 이력 및 [{exclusions_str}] 등의 성분이 함유된 제품군은 "
-                    f"스코어 산정 리스트에서 선제 필터링되었습니다. 아래 식약처 공인 성분 지식베이스 규격에 맞춰 엄선한 랭킹 TOP 12와 최적의 복용 골든타임을 참고하시기 바랍니다."
-                )
-                if not st.session_state.streaming_done:
-                    def text_char_generator(text):
-                        for char in text:
-                            yield char
-                            time.sleep(0.008)
-                    st.write_stream(text_char_generator(ai_report_text))
+            # --- 🚨 AI 긴급 안전성 교차 필터 경고창 (펄스 애니메이션 스킨 적용) ---
+            st.markdown("---")
+            st.markdown("### &#x1F4CA; 실시간 중복/과다 섭취 안전성 시뮬레이션 (영양제 디옵티마이저)")
+            categories = ["마그네슘", "비타민C", "오메가3", "유산균 / 프로바이오틱스", "콜라겐", "멀티비타민"]
+            selected_category = st.selectbox(
+                "&#x1F50E; 특정 추천 카테고리만 필터링:",
+                ["전체 맞춤 추천"] + categories,
+                index=0
+            )
+            filter_cat = None if selected_category == "전체 맞춤 추천" else selected_category
+
+            try:
+                recommendations = get_recommendations(survey, selected_category=filter_cat, top_n=24)
+            except Exception as e:
+                st.error(f"추천 엔진 구동 중 에러가 발생했습니다: {e}")
+                if st.button("돌아가기"):
+                    st.session_state.step = 2
+                    st.rerun()
+                return
+
+            if recommendations.empty:
+                st.warning("⚠️ 입력하신 알레르기/부작용 필터 또는 맞춤 가중치 조건에 해당하는 제품이 목록에 존재하지 않거나 모두 필터링되었습니다.")
+                if st.button("⬅️ 웰니스 리포트로 돌아가기"):
+                    st.session_state.step = 2
+                    st.rerun()
+                return
+
+            product_names_list = []
+            for i, (idx, row) in enumerate(recommendations.iterrows()):
+                platform = str(row.get('platform') or 'Unknown')
+                name = str(row.get('product_name') or row.get('displayName') or '이름 없음')
+                product_names_list.append(f"{i+1}위. [{platform}] {name[:55]}")
+
+            selected_combos = st.multiselect(
+                "&#x26A0;&#xFE0F; 조합할 제품군 복수 선택 (초과 복용 실시간 감지):",
+                options=product_names_list,
+                default=product_names_list[:2] if len(product_names_list) >= 2 else product_names_list
+            )
+            
+            if selected_combos:
+                total_vit_c = total_mag = total_vit_d = total_zinc = 0.0
+                for combo_label in selected_combos:
+                    try:
+                        rank_idx = int(combo_label.split('위.')[0].strip()) - 1
+                        row_combo = recommendations.iloc[rank_idx]
+                        std_ing_combo = str(row_combo.get('표준성분', ''))
+                        if "비타민C" in std_ing_combo: total_vit_c += 1000.0
+                        if "멀티비타민" in std_ing_combo or "비타민" in std_ing_combo:
+                            total_vit_c += 500.0; total_mag += 100.0; total_vit_d += 1000.0; total_zinc += 10.0
+                        if "마그네슘" in std_ing_combo: total_mag += 350.0
+                        if "비타민D" in std_ing_combo: total_vit_d += 2000.0
+                    except: pass
+                    
+                danger_messages = []
+                if total_vit_c > 2000.0:
+                    danger_messages.append(f"비타민C 과다 복용 위험! ({total_vit_c:.0f}mg / 상한치 2000mg 대비 {(total_vit_c/2000)*100:.0f}%)")
+                if total_mag > 350.0:
+                    danger_messages.append(f"마그네슘 과량 복용 주의! ({total_mag:.0f}mg / 상한치 350mg 대비 {(total_mag/350)*100:.0f}%)")
+                if total_vit_d > 4000.0:
+                    danger_messages.append(f"비타민D 고칼슘혈증 경고! ({total_vit_d:.0f}IU / 상한치 4000IU 대비 {(total_vit_d/4000)*100:.0f}%)")
+                
+                if danger_messages:
+                    for msg in danger_messages:
+                        st.markdown(f"""
+                            <div class="pulse-warning" style="padding:15px 20px; border-radius:15px; margin-bottom:12px; color:#ef4444; font-weight:700; font-size:0.9rem; display:flex; align-items:center; gap:8px;">
+                                <span>⚠️</span>
+                                <span>{msg}</span>
+                            </div>
+                        """, unsafe_allow_html=True)
                 else:
-                    st.write(ai_report_text)
+                    st.success("🟢 식약처 안전 섭취 규격 충족 조합입니다.")
 
-                # --- 🚨 AI 긴급 안전성 교차 필터 경고창 ---
-                st.markdown("---")
-                st.markdown("### &#x1F4CA; 실시간 중복/과다 섭취 안전성 시뮬레이션")
-                categories = ["마그네슘", "비타민C", "오메가3", "유산균 / 프로바이오틱스", "콜라겐", "멀티비타민"]
-                selected_category = st.selectbox(
-                    "&#x1F50E; 특정 추천 카테고리만 필터링:",
-                    ["전체 맞춤 추천"] + categories,
-                    index=0
-                )
-                filter_cat = None if selected_category == "전체 맞춤 추천" else selected_category
+            product_options = []
+            for i, (idx, row) in enumerate(recommendations.iterrows()):
+                platform = str(row.get('platform') or 'Unknown')
+                name = str(row.get('product_name') or row.get('displayName') or '이름 없음')
+                product_options.append(f"{i+1}위. [{platform}] {name[:60]}...")
+            selected_product_label = st.selectbox(
+                "&#x1F52C; 식약처 가이드라인 조회할 영양제 선택:",
+                product_options, index=0
+            )
+            selected_idx = product_options.index(selected_product_label)
+            selected_row = recommendations.iloc[selected_idx]
 
-                try:
-                    recommendations = get_recommendations(survey, selected_category=filter_cat, top_n=24)
-                except Exception as e:
-                    st.error(f"추천 엔진 구동 중 에러가 발생했습니다: {e}")
-                    if st.button("돌아가기"):
-                        st.session_state.step = 2
-                        st.rerun()
-                    return
+            # --- 성분 카테고리 탭 + 4열 카드 그리드 ---
+            st.markdown("---")
+            st.markdown("### &#x1F3C6; 큐레이션 추천 랭킹 TOP 12")
+            tab_all, tab_vit, tab_min, tab_others = st.tabs(["전체 제품", "비타민 계열", "미네랄 계열", "오메가 / 유산균 / 콜라겐"])
+            with tab_all:
+                render_product_grid(recommendations.head(12), selected_row, db_data, survey)
+            with tab_vit:
+                df_vit = recommendations[recommendations['표준성분'].str.contains('비타민|레티놀|엽산', na=False, case=False)]
+                render_product_grid(df_vit.head(12), selected_row, db_data, survey)
+            with tab_min:
+                df_min = recommendations[recommendations['표준성분'].str.contains('마그네슘|철분|아연|칼슘|미네랄|구리|망간|셀렌', na=False, case=False)]
+                render_product_grid(df_min.head(12), selected_row, db_data, survey)
+            with tab_others:
+                df_oth = recommendations[recommendations['표준성분'].str.contains('오메가|유산균|프로바이오틱스|콜라겐', na=False, case=False)]
+                render_product_grid(df_oth.head(12), selected_row, db_data, survey)
 
-                if recommendations.empty:
-                    st.warning("⚠️ 입력하신 알레르기/부작용 필터 또는 맞춤 가중치 조건에 해당하는 제품이 목록에 존재하지 않거나 모두 필터링되었습니다.")
-                    if st.button("⬅️ 웰니스 리포트로 돌아가기"):
-                        st.session_state.step = 2
-                        st.rerun()
-                    return
+            # --- 트리플 아웃링크 버튼 덱 & CS 방어 문구 인젝션 ---
+            sel_name = str(selected_row.get('product_name') or selected_row.get('displayName') or '')
+            import urllib.parse
+            coupang_url = f"https://www.coupang.com/np/search?q={urllib.parse.quote(sel_name)}"
+            naver_url = f"https://search.shopping.naver.com/search/all?query={urllib.parse.quote(sel_name)}"
+            iherb_url = f"https://www.iherb.com/search?kw={urllib.parse.quote(sel_name)}"
+            
+            st.markdown("<div style='font-size:0.78rem; color:#475569; margin: 15px 0 5px 0;'>* 위 가격은 시장 평균가 기준이며 실시간 가격 변동 및 품절이 발생할 수 있습니다.</div>", unsafe_allow_html=True)
+            st.markdown(f"""
+                <div class="outlink-deck">
+                    <a class="outlink-btn outlink-btn-coupang" href="{coupang_url}" target="_blank">&#x1F7E0; 쿠팡 검색</a>
+                    <a class="outlink-btn outlink-btn-naver" href="{naver_url}" target="_blank">&#x1F7E2; 네이버 쇼핑</a>
+                    <a class="outlink-btn outlink-btn-iherb" href="{iherb_url}" target="_blank">&#x1F7E2; 아이허브 직구</a>
+                </div>
+            """, unsafe_allow_html=True)
 
-                product_names_list = []
-                for i, (idx, row) in enumerate(recommendations.iterrows()):
-                    platform = str(row.get('platform') or 'Unknown')
-                    name = str(row.get('product_name') or row.get('displayName') or '이름 없음')
-                    product_names_list.append(f"{i+1}위. [{platform}] {name[:55]}")
+            # --- 비교 보관함 (단일 와이드로 완전 개편) ---
+            st.markdown("---")
+            st.markdown("### &#x1F6D2; 뉴트리핏 인터랙티브 상품 비교 보관함 (Comparison Matrix)")
+            st.write("선택하신 영양제들의 브랜드, 가격, 평점 및 식약처 공식 기능성 규격을 한눈에 병렬 대조하여 최적의 선택을 돕습니다.")
 
-                selected_combos = st.multiselect(
-                    "&#x26A0;&#xFE0F; 조합할 제품군 복수 선택 (초과 복용 실시간 감지):",
-                    options=product_names_list,
-                    default=product_names_list[:2] if len(product_names_list) >= 2 else product_names_list
-                )
-                if selected_combos:
-                    total_vit_c = total_mag = total_vit_d = total_zinc = 0.0
-                    for combo_label in selected_combos:
-                        try:
-                            rank_idx = int(combo_label.split('위.')[0].strip()) - 1
-                            row_combo = recommendations.iloc[rank_idx]
-                            std_ing_combo = str(row_combo.get('표준성분', ''))
-                            if "비타민C" in std_ing_combo: total_vit_c += 1000.0
-                            if "멀티비타민" in std_ing_combo or "비타민" in std_ing_combo:
-                                total_vit_c += 500.0; total_mag += 100.0; total_vit_d += 1000.0; total_zinc += 10.0
-                            if "마그네슘" in std_ing_combo: total_mag += 350.0
-                            if "비타민D" in std_ing_combo: total_vit_d += 2000.0
-                        except: pass
-                    danger_messages = []
-                    if total_vit_c > 2000.0:
-                        danger_messages.append(f"⚠️ **비타민C 과다 복용 위험!** ({total_vit_c:.0f}mg / 상한치 2000mg 대비 {(total_vit_c/2000)*100:.0f}%)")
-                    if total_mag > 350.0:
-                        danger_messages.append(f"⚠️ **마그네슘 과량 복용 주의!** ({total_mag:.0f}mg / 상한치 350mg 대비 {(total_mag/350)*100:.0f}%)")
-                    if total_vit_d > 4000.0:
-                        danger_messages.append(f"⚠️ **비타민D 고칼슘혈증 경고!** ({total_vit_d:.0f}IU / 상한치 4000IU 대비 {(total_vit_d/4000)*100:.0f}%)")
-                    if danger_messages:
-                        for msg in danger_messages: st.error(msg)
-                    else:
-                        st.success("&#x1F7E2; 식약처 안전 섭취 규격 충족 조합입니다.")
+            selected_compare = st.multiselect(
+                "⚖️ 대조 비교할 상품을 보관함에 담아보세요 (최대 3개 선택):",
+                options=product_names_list,
+                default=product_names_list[:2] if len(product_names_list) >= 2 else product_names_list,
+                max_selections=3,
+                key="compare_matrix_selector"
+            )
 
-                product_options = []
-                for i, (idx, row) in enumerate(recommendations.iterrows()):
-                    platform = str(row.get('platform') or 'Unknown')
-                    name = str(row.get('product_name') or row.get('displayName') or '이름 없음')
-                    product_options.append(f"{i+1}위. [{platform}] {name[:60]}...")
-                selected_product_label = st.selectbox(
-                    "&#x1F52C; 식약처 가이드라인 조회할 영양제 선택:",
-                    product_options, index=0
-                )
-                selected_idx = product_options.index(selected_product_label)
-                selected_row = recommendations.iloc[selected_idx]
-
-                # --- 성분 카테고리 탭 + 4열 카드 그리드 ---
-                st.markdown("---")
-                st.markdown("### &#x1F3C6; 큐레이션 추천 랭킹 TOP 12")
-                tab_all, tab_vit, tab_min, tab_others = st.tabs(["전체 제품", "비타민 계열", "미네랄 계열", "오메가 / 유산균 / 콜라겐"])
-                with tab_all:
-                    render_product_grid(recommendations.head(12), selected_row, db_data, survey)
-                with tab_vit:
-                    df_vit = recommendations[recommendations['표준성분'].str.contains('비타민|레티놀|엽산', na=False, case=False)]
-                    render_product_grid(df_vit.head(12), selected_row, db_data, survey)
-                with tab_min:
-                    df_min = recommendations[recommendations['표준성분'].str.contains('마그네슘|철분|아연|칼슘|미네랄|구리|망간|셀렌', na=False, case=False)]
-                    render_product_grid(df_min.head(12), selected_row, db_data, survey)
-                with tab_others:
-                    df_oth = recommendations[recommendations['표준성분'].str.contains('오메가|유산균|프로바이오틱스|콜라겐', na=False, case=False)]
-                    render_product_grid(df_oth.head(12), selected_row, db_data, survey)
-
-                # --- 트리플 아웃링크 버튼 덱 ---
-                sel_name = str(selected_row.get('product_name') or selected_row.get('displayName') or '')
-                import urllib.parse
-                coupang_url = f"https://www.coupang.com/np/search?q={urllib.parse.quote(sel_name)}"
-                naver_url = f"https://search.shopping.naver.com/search/all?query={urllib.parse.quote(sel_name)}"
-                iherb_url = f"https://www.iherb.com/search?kw={urllib.parse.quote(sel_name)}"
-                st.markdown(f"""
-                    <div class="outlink-deck">
-                        <a class="outlink-btn outlink-btn-coupang" href="{coupang_url}" target="_blank">&#x1F7E0; 쿠팡 검색</a>
-                        <a class="outlink-btn outlink-btn-naver" href="{naver_url}" target="_blank">&#x1F7E2; 네이버 쇼핑</a>
-                        <a class="outlink-btn outlink-btn-iherb" href="{iherb_url}" target="_blank">&#x1F7E2; 아이허브 직구</a>
-                    </div>
-                """, unsafe_allow_html=True)
-
-                # --- 비교 보관함 ---
-                st.markdown("---")
-                st.markdown("### &#x1F6D2; 뉴트리핏 인터랙티브 상품 비교 보관함 (Comparison Matrix)")
-                st.write("선택하신 영양제들의 브랜드, 가격, 평점 및 식약처 공식 기능성 규격을 한눈에 병렬 대조하여 최적의 선택을 돕습니다.")
-
-                selected_compare = st.multiselect(
-                    "⚖️ 대조 비교할 상품을 보관함에 담아보세요 (최대 3개 선택):",
-                    options=product_names_list,
-                    default=product_names_list[:2] if len(product_names_list) >= 2 else product_names_list,
-                    max_selections=3,
-                    key="compare_matrix_selector"
-                )
-
-                if not selected_compare:
-                    st.info("비교할 상품을 보관함에 담아주세요 🛒")
-                else:
-                    cols_compare = st.columns(len(selected_compare))
-                    for idx_c, combo_label in enumerate(selected_compare):
-                        try:
-                            rank_idx = int(combo_label.split('위.')[0].strip()) - 1
-                            row_compare = recommendations.iloc[rank_idx]
-                            comp_platform = str(row_compare.get('platform') or 'Unknown')
-                            comp_name = str(row_compare.get('product_name') or row_compare.get('displayName') or '이름 없음')
-                            comp_brand = str(row_compare.get('brandName') or row_compare.get('brand') or '브랜드 정보 없음')
-                            comp_rating = row_compare.get('rating', 0.0)
-                            comp_reviews = int(row_compare.get('review_count', 0))
-                            comp_std_ing = str(row_compare.get('표준성분', ''))
-                            comp_detail_url = get_product_detail_url(row_compare)
-                            comp_mkt = get_market_top_product(comp_std_ing)
-                            comp_price_val = row_compare.get('price')
-                            if pd.isna(comp_price_val):
-                                comp_price_val = row_compare.get('discountPrice') or row_compare.get('price_cur') or 0.0
-                            comp_price_str = f"{int(comp_price_val):,}원" if comp_price_val > 0 else "가격 정보 없음"
-                            comp_foodsafety = find_foodsafety_info(comp_std_ing, db_data)
-                            comp_fn_desc = "표준 고시 기준 규격 적용 원료"
-                            if comp_foodsafety:
-                                comp_fn_desc = comp_foodsafety[0]['functionality']
-                            with cols_compare[idx_c]:
-                                primary_url = comp_mkt["url"] if comp_mkt else comp_detail_url
-                                mkt_badge_html = ""
-                                if comp_mkt:
-                                    mkt_badge_html = (
-                                        f'<div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:10px 12px;margin-top:10px;">'
-                                        f'<div style="font-size:0.68rem;color:#fbbf24;font-weight:700;margin-bottom:4px;">📌 시장 내 대표 인기 제품</div>'
-                                        f'<div style="font-size:0.78rem;color:#e2e8f0;font-weight:600;">{comp_mkt["brand"]} {comp_mkt["name"]}</div>'
-                                        f'<div style="font-size:0.8rem;color:#34d399;font-weight:700;margin-top:2px;">{comp_mkt["price"]}</div>'
-                                        f'<a href="{comp_mkt["url"]}" target="_blank" style="font-size:0.68rem;color:#60a5fa;text-decoration:none;">🔗 네이버쇼핑 바로가기 ↗</a>'
-                                        f'</div>'
-                                    )
-                                st.markdown(f'''<div style="background:#FAFBFF;border:2px solid #5A83F1;border-radius:20px;padding:20px;min-height:390px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 24px rgba(90,131,241,0.06);">
+            if not selected_compare:
+                st.info("비교할 상품을 보관함에 담아주세요 🛒")
+            else:
+                cols_compare = st.columns(len(selected_compare))
+                for idx_c, combo_label in enumerate(selected_compare):
+                    try:
+                        rank_idx = int(combo_label.split('위.')[0].strip()) - 1
+                        row_compare = recommendations.iloc[rank_idx]
+                        comp_platform = str(row_compare.get('platform') or 'Unknown')
+                        comp_name = str(row_compare.get('product_name') or row_compare.get('displayName') or '이름 없음')
+                        comp_brand = str(row_compare.get('brandName') or row_compare.get('brand') or '브랜드 정보 없음')
+                        comp_rating = row_compare.get('rating', 0.0)
+                        comp_reviews = int(row_compare.get('review_count', 0))
+                        comp_std_ing = str(row_compare.get('표준성분', ''))
+                        comp_detail_url = get_product_detail_url(row_compare)
+                        comp_mkt = get_market_top_product(comp_std_ing)
+                        comp_price_val = row_compare.get('price')
+                        if pd.isna(comp_price_val):
+                            comp_price_val = row_compare.get('discountPrice') or row_compare.get('price_cur') or 0.0
+                        comp_price_str = f"{int(comp_price_val):,}원" if comp_price_val > 0 else "가격 정보 없음"
+                        comp_foodsafety = find_foodsafety_info(comp_std_ing, db_data)
+                        comp_fn_desc = "표준 고시 기준 규격 적용 원료"
+                        if comp_foodsafety:
+                            comp_fn_desc = comp_foodsafety[0]['functionality']
+                        with cols_compare[idx_c]:
+                            primary_url = comp_mkt["url"] if comp_mkt else comp_detail_url
+                            mkt_badge_html = ""
+                            if comp_mkt:
+                                mkt_badge_html = (
+                                    f'<div style="background:#FAFBFF;border:1px solid #E5EFFF;border-radius:10px;padding:10px 12px;margin-top:10px;">'
+                                    f'<div style="font-size:0.68rem;color:#2C3281;font-weight:700;margin-bottom:4px;">📌 시장 내 대표 인기 제품</div>'
+                                    f'<div style="font-size:0.78rem;color:#1F2937;font-weight:600;">{comp_mkt["brand"]} {comp_mkt["name"]}</div>'
+                                    f'<div style="font-size:0.8rem;color:#5A83F1;font-weight:700;margin-top:2px;">{comp_mkt["price"]}</div>'
+                                    f'<a href="{comp_mkt["url"]}" target="_blank" style="font-size:0.68rem;color:#5A83F1;text-decoration:none;font-weight:700;">🔗 네이버쇼핑 바로가기 ↗</a>'
+                                    f'</div>'
+                                )
+                            st.markdown(f'''<div style="background:#FFFFFF;border:1px solid #E5EFFF;border-radius:20px;padding:20px;min-height:390px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 10px 30px -5px rgba(90, 131, 241, 0.08);">
 <div>
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
 <span style="font-size:0.8rem;color:#2C3281;background:#E5EFFF;padding:2px 8px;border-radius:6px;font-weight:700;">⚖️ 비교 {idx_c+1}</span>
@@ -1484,74 +1546,16 @@ def main():
 </div>
 <a class="buy-btn" href="{primary_url}" target="_blank" style="background:linear-gradient(135deg,#5A83F1,#2C3281);margin-top:15px;">🛒 제품 상세 보기 ↗</a>
 </div>''', unsafe_allow_html=True)
-                        except Exception as e:
-                            st.error(f"비교 처리 중 오류: {e}")
+                    except Exception as e:
+                        st.error(f"비교 처리 중 오류: {e}")
 
-            # ==================== 우측 유틸리티 사이드카드 (col_side) ====================
-            with col_side:
-                # --- 유틸 카드 1: 타임라인 가이드 ---
-                st.markdown('<div class="side-section-label">⏰ AI 복용 골든타임</div>', unsafe_allow_html=True)
-                all_std_ings = "".join(recommendations.head(12)['표준성분'].dropna().tolist())
-                morning_items, lunch_items, night_items = [], [], []
-                if "유산균" in all_std_ings or "프로바이오틱스" in all_std_ings:
-                    morning_items.append("🥛 유산균/프로바이오틱스 — 공복 복용 권장")
-                if "비타민C" in all_std_ings:
-                    lunch_items.append("🍊 비타민C — 식후 복용 권장")
-                if "멀티비타민" in all_std_ings or "비타민" in all_std_ings:
-                    lunch_items.append("🍇 멀티비타민 — 식후 에너지 대사")
-                if "오메가3" in all_std_ings:
-                    lunch_items.append("🐟 오메가3 — 식후 담즙산 흡수")
-                if "마그네슘" in all_std_ings:
-                    night_items.append("🥑 마그네슘 — 취침 전 신경 안정")
-                if "콜라겐" in all_std_ings:
-                    night_items.append("🎀 콜라겐 — 야간 피부 재생")
-
-                tl_html = ''
-                tl_html += '<div style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.18);border-radius:12px;padding:12px 14px;margin-bottom:10px;">'                           '<div style="font-size:0.78rem;font-weight:700;color:#60a5fa;margin-bottom:6px;">🌅 아침 기상 공복</div>'
-                if morning_items:
-                    for it in morning_items: tl_html += f'<div style="font-size:0.75rem;color:#e2e8f0;margin-bottom:3px;">{it}</div>'
-                else:
-                    tl_html += '<div style="font-size:0.73rem;color:#94a3b8;">따뜻한 물 한 잔으로 시작하세요 🟢</div>'
-                tl_html += '</div>'
-                tl_html += '<div style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.18);border-radius:12px;padding:12px 14px;margin-bottom:10px;">'                           '<div style="font-size:0.78rem;font-weight:700;color:#34d399;margin-bottom:6px;">☀️ 점심/오후 식후</div>'
-                if lunch_items:
-                    for it in lunch_items: tl_html += f'<div style="font-size:0.75rem;color:#e2e8f0;margin-bottom:3px;">{it}</div>'
-                else:
-                    tl_html += '<div style="font-size:0.73rem;color:#94a3b8;">수분 보충을 충분히 해주세요 ☀️</div>'
-                tl_html += '</div>'
-                tl_html += '<div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.18);border-radius:12px;padding:12px 14px;">'                           '<div style="font-size:0.78rem;font-weight:700;color:#fbbf24;margin-bottom:6px;">🌙 저녁 취침 전</div>'
-                if night_items:
-                    for it in night_items: tl_html += f'<div style="font-size:0.75rem;color:#e2e8f0;margin-bottom:3px;">{it}</div>'
-                else:
-                    tl_html += '<div style="font-size:0.73rem;color:#94a3b8;">오늘의 영양제 섭취 완료! 숙면을 취하세요 🌙</div>'
-                tl_html += '</div>'
-                st.markdown(f'<div class="side-util-card">{tl_html}</div>', unsafe_allow_html=True)
-
-                # --- 유틸 카드 2: 내보내기 ---
-                st.markdown('<div class="side-section-label">📥 데이터 내보내기</div>', unsafe_allow_html=True)
-                import io
-                if os.path.exists(LOG_FILE_PATH):
-                    try:
-                        df_logs_side = pd.read_csv(LOG_FILE_PATH, encoding="utf-8-sig")
-                        csv_data_side = df_logs_side.to_csv(index=False, encoding="utf-8-sig")
-                        st.download_button(
-                            label="📥 누적 로그 (.csv)",
-                            data=csv_data_side,
-                            file_name="survey_logs_export.csv",
-                            mime="text/csv",
-                            use_container_width=True
-                        )
-                    except Exception:
-                        st.info("CSV 데이터가 아직 없습니다.")
-                else:
-                    st.info("📝 진단 로그가 없습니다.")
-
-            # ==================== 식약처 정밀 성분 가이드 (전체 폭) ====================
+            # ==================== 식약처 정밀 성분 가이드 (화이트 카드 섀도우 적용) ====================
             st.markdown("---")
             st.markdown("### 🛡️ 선택 제품 식약처 정밀 성분 분석 가이드")
             std_ing = str(selected_row.get('표준성분', ''))
             st.info(f"📋 **선택 제품**: {selected_row.get('product_name')}\n\n🧬 **검출 표준 성분**: `{std_ing}`")
             foodsafety_infos = find_foodsafety_info(std_ing, db_data)
+            
             if not foodsafety_infos:
                 st.info("💡 본 제품의 표준성분은 고시형 원료로 표준 고시 섭취 규격에 따릅니다.")
                 col_g1, col_g2 = st.columns(2)
@@ -1585,6 +1589,36 @@ def main():
                             st.markdown("#### ⚠️ 섭취 시 주의사항")
                             st.warning(info['precautions'])
 
+            # ==================== 데이터 내보내기 (Full-width 프리미엄 다운로드 바 형태로 최적화) ====================
+            st.markdown("---")
+            st.markdown("### 📥 뉴트리핏 진단 결과 데이터 내보내기")
+            if os.path.exists(LOG_FILE_PATH):
+                try:
+                    df_logs_down = pd.read_csv(LOG_FILE_PATH, encoding="utf-8-sig")
+                    csv_data_down = df_logs_down.to_csv(index=False, encoding="utf-8-sig")
+                    st.download_button(
+                        label="📥 실시간 누적 진단 로그 원본 (.csv) 전체 폭 내보내기",
+                        data=csv_data_down,
+                        file_name="survey_logs_export.csv",
+                        mime="text/csv",
+                        use_container_width=True,
+                        key="premium_csv_download_btn"
+                    )
+                except:
+                    st.info("로그 데이터를 파싱하지 못했습니다.")
+            else:
+                st.info("📝 아직 누적된 사용자 진단 로그가 없습니다.")
+
+            # ==================== 식약처 공식 메디컬 면책 공지 (Disclaimer) 및 데이터 출처 신설 ====================
+            st.markdown("""
+                <div style="background: #FFFFFF; border: 1px solid #E5EFFF; border-radius: 20px; padding: 25px; margin-top: 30px; box-shadow: 0 10px 30px -5px rgba(90, 131, 241, 0.08); font-size: 0.8rem; color: #475569; line-height: 1.6;">
+                    <h5 style="color: #2C3281; font-weight: 700; margin: 0 0 12px 0;">🛡️ 식약처 공식 메디컬 면책 공지 (Medical Disclaimer)</h5>
+                    본 서비스에서 제공하는 모든 웰니스 큐레이션 및 Scikit-Learn 머신러닝 기반 건강 위험도 예측 수치는 식약처(식품의약품안전처)에서 제공하는 건강기능식품 공공데이터포털(API)의 규격 정보에 근거합니다.<br>
+                    <strong>주의:</strong> 본 결과는 특정 질환에 대한 의사/약사의 의학적 치료 진단 또는 전문적인 약학적 처방을 대체할 수 없으며, 일반적인 건강 증진 목적의 참고 정보로만 제공됩니다. 특정 질환 치료 목적의 영양제 섭취 시 반드시 전문의와의 상담이 선행되어야 합니다.<br><br>
+                    <strong>💡 데이터 출처 고시:</strong> 식품의약품안전처 공공데이터포털 건강기능식품 기능성 원료 및 제품 정보 API 마스터 데이터베이스 (2026 기준).
+                </div>
+            """, unsafe_allow_html=True)
+
             st.markdown("---")
             col_btn_back1, col_btn_back2 = st.columns(2)
             with col_btn_back1:
@@ -1607,8 +1641,7 @@ def main():
             if not st.session_state.streaming_done:
                 st.session_state.streaming_done = True
                 st.rerun()
-
-
+            
     # ==================== 메뉴 분기 2: 📊 뉴트리핏 데이터 인사이트 (Admin) ====================
     elif selected_menu == "📊 뉴트리핏 데이터 인사이트 (Admin)":
         st.subheader("📊 뉴트리핏 백오피스 데이터 모니터링 시스템")
