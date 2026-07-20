@@ -400,56 +400,69 @@ def main():
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap');
 
-        /* ========== 전역 테마 하드 고정 (화이트 모드 및 블루 계열) ========== */
-        html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
-            background-color: #FFFFFF !important;
+        /* ========== 전역 테마 하드 고정 (소프트 그레이시 블루 및 화이트 레이어드) ========== */
+        html, body, [data-testid="stAppViewContainer"] {
+            background-color: #F4F7FF !important;
             color: #1F2937 !important;
         }
-        h1, h2, h3, h4, h5, h6, p, span, label, li, div, button {
+        
+        /* 스트림릿 기본 탑 헤더는 GNB 고정 바와 겹치므로 숨김 처리 */
+        [data-testid="stHeader"] {
+            display: none !important;
+        }
+        
+        /* 메인 콘텐츠 영역 상단 여백 확보 (GNB 고정 바 높이 고려) */
+        .main .block-container {
+            padding-top: 120px !important;
+            background-color: #F4F7FF !important;
+        }
+
+        /* 폰트 및 텍스트 컬러 지정 (아이콘 깨짐 방지를 위해 span, div, button 등은 제외) */
+        h1, h2, h3, h4, h5, h6, p, label, li {
             color: #1F2937 !important;
             font-family: 'Outfit', 'Noto Sans KR', sans-serif !important;
         }
+        
         [data-testid="stSidebar"] {
             background-color: #FAFBFF !important;
             border-right: 1px solid #E5EFFF !important;
         }
         
-        /* ========== GNB 헤더 (화이트 테마 조화) ========== */
+        /* ========== GNB 헤더 (보조색인 딥블루 #2C3281로 세련되게 고정) ========== */
         .gnb-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #FFFFFF;
-            border-bottom: 2px solid #E5EFFF;
-            padding: 14px 32px;
-            position: sticky;
+            background: #2C3281;
+            border-bottom: 2px solid #5A83F1;
+            padding: 14px 40px;
+            position: fixed;
             top: 0;
-            z-index: 999;
+            left: 0;
+            right: 0;
+            z-index: 999999;
             backdrop-filter: blur(14px);
-            margin-bottom: 24px;
-            border-radius: 0 0 16px 16px;
-            box-shadow: 0 4px 24px rgba(90, 131, 241, 0.06);
+            box-shadow: 0 4px 30px rgba(44, 50, 129, 0.15);
+            height: 70px;
         }
         .gnb-logo {
             font-family: 'Outfit', sans-serif;
-            font-size: 1.35rem;
+            font-size: 1.45rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #5A83F1, #2C3281);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #FFFFFF !important;
             letter-spacing: -0.5px;
         }
         .gnb-nav {
             display: flex;
-            gap: 6px;
+            gap: 8px;
             align-items: center;
         }
         .gnb-link {
             font-family: 'Noto Sans KR', sans-serif;
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            color: #475569;
-            padding: 6px 14px;
+            color: #E5EFFF !important;
+            padding: 8px 16px;
             border-radius: 8px;
             text-decoration: none;
             transition: all 0.22s ease;
@@ -457,19 +470,19 @@ def main():
             cursor: pointer;
         }
         .gnb-link:hover {
-            color: #2C3281;
-            background: #E5EFFF;
-            border-color: #E5EFFF;
+            color: #FFFFFF !important;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.1);
         }
         .gnb-link-highlight {
-            color: #5A83F1;
-            border: 1px solid rgba(90, 131, 241, 0.35);
-            background: rgba(90, 131, 241, 0.07);
+            color: #FFFFFF !important;
+            border: 1px solid rgba(90, 131, 241, 0.5);
+            background: #5A83F1;
         }
         .gnb-link-highlight:hover {
-            background: rgba(90, 131, 241, 0.15);
-            border-color: #5A83F1;
-            color: #2C3281;
+            background: #4772e0;
+            border-color: #FFFFFF;
+            color: #FFFFFF !important;
         }
 
         /* ========== 기존 카드/타이틀 (화이트 및 블루칩 기반 개편) ========== */
@@ -480,13 +493,13 @@ def main():
             background: linear-gradient(135deg, #5A83F1, #2C3281);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
         }
         .sub-title {
             font-family: 'Noto Sans KR', sans-serif;
             font-size: 1rem;
             color: #475569;
-            margin-bottom: 5px;
+            margin-bottom: 12px;
         }
         .rating-star {
             color: #fbbf24;
@@ -494,21 +507,21 @@ def main():
             font-size: 1.1rem;
         }
         .ecommerce-card {
-            background: #FAFBFF !important;
+            background: #FFFFFF !important;
             border: 1px solid #E5EFFF !important;
             border-radius: 20px;
-            padding: 18px;
+            padding: 20px;
             margin-bottom: 24px;
             transition: transform 0.28s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.28s ease, border-color 0.28s ease;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             height: 580px;
-            box-shadow: 0 6px 20px rgba(90, 131, 241, 0.04);
+            box-shadow: 0 10px 30px -5px rgba(90, 131, 241, 0.08) !important;
         }
         .ecommerce-card:hover {
             transform: translateY(-9px);
-            box-shadow: 0 22px 40px rgba(90, 131, 241, 0.12) !important;
+            box-shadow: 0 22px 40px rgba(90, 131, 241, 0.18) !important;
             border-color: #5A83F1 !important;
         }
         .card-badge {
@@ -545,18 +558,18 @@ def main():
             box-shadow: 0 8px 20px rgba(90, 131, 241, 0.35);
         }
 
-        /* ========== 유틸리티 사이드카드 ========== */
+        /* ========== 유틸리티 사이드카드 (화이트 배경에 입체적인 섀도우) ========== */
         .side-util-card {
-            background: #FAFBFF !important;
+            background: #FFFFFF !important;
             border: 1px solid #E5EFFF !important;
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 18px;
-            box-shadow: 0 6px 20px rgba(90, 131, 241, 0.04);
+            box-shadow: 0 10px 30px -5px rgba(90, 131, 241, 0.08) !important;
             transition: box-shadow 0.25s ease, border-color 0.25s ease;
         }
         .side-util-card:hover {
-            box-shadow: 0 10px 30px rgba(90, 131, 241, 0.1);
+            box-shadow: 0 15px 35px rgba(90, 131, 241, 0.12) !important;
             border-color: #5A83F1;
         }
         .side-section-label {
@@ -605,16 +618,17 @@ def main():
 
         /* ========== 엔터프라이즈 푸터 ========== */
         .enterprise-footer {
-            background: #FAFBFF !important;
+            background: #FFFFFF !important;
             border-top: 2px solid #E5EFFF;
             border-radius: 20px 20px 0 0;
-            padding: 28px 40px;
+            padding: 32px 40px;
             margin-top: 40px;
             text-align: center;
+            box-shadow: 0 -10px 30px -5px rgba(90, 131, 241, 0.04) !important;
         }
         .footer-logo {
             font-family: 'Outfit', sans-serif;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             font-weight: 800;
             background: linear-gradient(135deg, #5A83F1, #2C3281);
             -webkit-background-clip: text;
