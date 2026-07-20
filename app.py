@@ -244,7 +244,7 @@ def render_product_grid(df_to_render, selected_row, db_data, survey):
             
             # 선택 강조 표시
             is_selected = (row.name == selected_row.name)
-            card_style = "border: 2px solid #5A83F1; background: #E5EFFF; box-shadow: 0 10px 25px rgba(90, 131, 241, 0.15);" if is_selected else ""
+            card_style = "border: 1.5px solid #2C3281; background: rgba(90, 131, 241, 0.06); box-shadow: 0 15px 35px rgba(44, 50, 129, 0.1);" if is_selected else ""
             rank_prefix = f"🔥 선택됨" if is_selected else f"추천"
             
             # 식약처 가이드 요약 추출
@@ -269,7 +269,7 @@ def render_product_grid(df_to_render, selected_row, db_data, survey):
             # 마크다운 렌더링 시 들여쓰기로 인한 HTML 태그 노출 방지를 위해 문자열 앞의 들여쓰기를 원천 제거합니다.
             card_html = f'''<div class="ecommerce-card" style="{card_style}">
 <div>
-<div style="position: relative; width: 100%; height: 160px; overflow: hidden; border-radius: 12px; margin-bottom: 12px; background: #FAFBFF; display: flex; justify-content: center; align-items: center;">
+<div style="position: relative; width: 100%; height: 160px; overflow: hidden; border-radius: 12px; margin-bottom: 12px; background: rgba(255, 255, 255, 0.7); display: flex; justify-content: center; align-items: center;">
 <img src="{img_url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=\'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400\'"/>
 </div>
 <div style="margin-bottom: 8px; line-height: 1.8;">
@@ -353,7 +353,7 @@ def render_product_grid(df_to_render, selected_row, db_data, survey):
 
                     # 선택 강조 표시
                     is_selected = (row.name == selected_row.name)
-                    card_style = "border: 2px solid #5A83F1; background: #E5EFFF; box-shadow: 0 10px 25px rgba(90, 131, 241, 0.15);" if is_selected else ""
+                    card_style = "border: 1.5px solid #2C3281; background: rgba(90, 131, 241, 0.06); box-shadow: 0 15px 35px rgba(44, 50, 129, 0.1);" if is_selected else ""
                     rank_prefix = f"🔥 선택됨" if is_selected else f"추천"
                     
                     # 식약처 가이드 요약 추출
@@ -364,7 +364,7 @@ def render_product_grid(df_to_render, selected_row, db_data, survey):
                     
                     static_card_html = f'''<div class="ecommerce-card" style="{card_style}">
 <div>
-<div style="position: relative; width: 100%; height: 160px; overflow: hidden; border-radius: 12px; margin-bottom: 12px; background: #FAFBFF; display: flex; justify-content: center; align-items: center;">
+<div style="position: relative; width: 100%; height: 160px; overflow: hidden; border-radius: 12px; margin-bottom: 12px; background: rgba(255, 255, 255, 0.7); display: flex; justify-content: center; align-items: center;">
 <img src="{img_url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=\'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400\'"/>
 </div>
 <div style="margin-bottom: 8px; line-height: 1.8;">
@@ -400,232 +400,232 @@ def main():
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap');
 
-        /* ========== 전역 테마 하드 고정 (소프트 그레이시 블루 및 화이트 레이어드) ========== */
+        /* ========== 전역 테마: 하이엔드 소프트 슬레이트 블루 그라데이션 고정 ========== */
         html, body, [data-testid="stAppViewContainer"] {
-            background-color: #F4F7FF !important;
-            color: #1F2937 !important;
+            background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%) !important;
+            color: #374151 !important;
         }
         
-        /* 스트림릿 기본 탑 헤더는 GNB 고정 바와 겹치므로 숨김 처리 */
+        /* 스트림릿 기본 탑 헤더 숨김 처리 */
         [data-testid="stHeader"] {
             display: none !important;
         }
         
-        /* 메인 콘텐츠 영역 상단 여백 확보 (GNB 고정 바 높이 고려) */
+        /* 메인 콘텐츠 영역 상단 헤드룸 및 와이드 여백 확보 */
         .main .block-container {
-            padding-top: 120px !important;
-            background-color: #F4F7FF !important;
+            padding-top: 130px !important;
+            background: transparent !important;
         }
 
-        /* 폰트 및 텍스트 컬러 지정 (아이콘 깨짐 방지를 위해 span, div, button 등은 제외) */
+        /* 폰트 및 텍스트 컬러 지정 (정갈하고 정밀한 타이포그래피) */
         h1, h2, h3, h4, h5, h6, p, label, li {
             color: #1F2937 !important;
             font-family: 'Outfit', 'Noto Sans KR', sans-serif !important;
+            letter-spacing: -0.3px !important;
         }
         
         [data-testid="stSidebar"] {
-            background-color: #FAFBFF !important;
-            border-right: 1px solid #E5EFFF !important;
+            background-color: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(12px) !important;
+            border-right: 1px solid rgba(90, 131, 241, 0.1) !important;
         }
         
-        /* ========== 모든 위젯 및 입력 폼 가독성 100% 보장 고정 ========== */
+        /* ========== 모든 위젯 및 입력 폼 가독성 & 프리미엄 테이밍 ========== */
         input, select, textarea, div[role="listbox"], [data-baseweb="select"], .stSelectbox, .stMultiSelect {
-            background-color: #FFFFFF !important;
-            color: #1F2937 !important;
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            color: #374151 !important;
+            border: 1px solid rgba(90, 131, 241, 0.15) !important;
+            border-radius: 12px !important;
+            transition: all 0.3s ease-in-out !important;
         }
+        
+        /* 포커스 및 선택 시 브랜드 주색 (#5A83F1) 은은한 네온 효과 */
+        input:focus, select:focus, textarea:focus {
+            border-color: #5A83F1 !important;
+            box-shadow: 0 0 10px rgba(90, 131, 241, 0.25) !important;
+        }
+        
         .stRadio label, .stCheckbox label, .stSelectbox label, .stMultiSelect label, .stSlider label, .stTextInput label, .stNumberInput label {
-            color: #1F2937 !important;
+            color: #374151 !important;
             font-weight: 600 !important;
         }
+        
         [data-testid="stWidgetLabel"] p, [data-testid="stMarkdownContainer"] p {
-            color: #1F2937 !important;
+            color: #374151 !important;
         }
+        
         [data-baseweb="tag"] {
             background-color: #E5EFFF !important;
             color: #2C3281 !important;
-            border: 1px solid #5A83F1 !important;
+            border: 1px solid rgba(90, 131, 241, 0.3) !important;
+            border-radius: 8px !important;
         }
         
         /* ========== 오버도즈 경고 펄스 애니메이션 ========== */
         @keyframes pulse-warning-anim {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
             70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
         .pulse-warning {
-            border: 2px solid #ef4444 !important;
-            background-color: #FFFFFF !important;
+            border: 1px solid rgba(239, 68, 68, 0.4) !important;
+            background-color: rgba(255, 255, 255, 0.95) !important;
             animation: pulse-warning-anim 2s infinite;
         }
         
-        /* ========== GNB 헤더 (보조색인 딥블루 #2C3281로 세련되게 고정) ========== */
+        /* ========== GNB 헤더 (반투명 화이트-인디고 엣지 스타일) ========== */
         .gnb-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #2C3281;
-            border-bottom: 2px solid #5A83F1;
-            padding: 14px 40px;
+            background: rgba(255, 255, 255, 0.85);
+            border-bottom: 1px solid rgba(90, 131, 241, 0.15);
+            padding: 14px 48px;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 999999;
-            backdrop-filter: blur(14px);
-            box-shadow: 0 4px 30px rgba(44, 50, 129, 0.15);
-            height: 70px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 40px -10px rgba(44, 50, 129, 0.05);
+            height: 75px;
+            transition: all 0.3s ease-in-out;
         }
         .gnb-logo {
             font-family: 'Outfit', sans-serif;
             font-size: 1.45rem;
             font-weight: 800;
-            color: #FFFFFF !important;
+            background: linear-gradient(135deg, #2C3281, #5A83F1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             letter-spacing: -0.5px;
         }
         .gnb-nav {
             display: flex;
-            gap: 8px;
+            gap: 12px;
             align-items: center;
         }
         .gnb-link {
             font-family: 'Noto Sans KR', sans-serif;
             font-size: 0.85rem;
             font-weight: 600;
-            color: #E5EFFF !important;
-            padding: 8px 16px;
-            border-radius: 8px;
+            color: #475569 !important;
+            padding: 8px 18px;
+            border-radius: 10px;
             text-decoration: none;
-            transition: all 0.22s ease;
+            transition: all 0.3s ease-in-out;
             border: 1px solid transparent;
             cursor: pointer;
         }
         .gnb-link:hover {
-            color: #FFFFFF !important;
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.1);
+            color: #2C3281 !important;
+            background: rgba(90, 131, 241, 0.08);
+            border-color: rgba(90, 131, 241, 0.1);
         }
         .gnb-link-highlight {
             color: #FFFFFF !important;
-            border: 1px solid rgba(90, 131, 241, 0.5);
-            background: #5A83F1;
+            background: #2C3281;
+            box-shadow: 0 4px 15px rgba(44, 50, 129, 0.2);
         }
         .gnb-link-highlight:hover {
-            background: #4772e0;
-            border-color: #FFFFFF;
+            background: #5A83F1;
+            box-shadow: 0 6px 20px rgba(90, 131, 241, 0.3);
             color: #FFFFFF !important;
         }
 
-        /* ========== 기존 카드/타이틀 (화이트 및 블루칩 기반 개편) ========== */
-        .main-title {
-            font-family: 'Outfit', 'Noto Sans KR', sans-serif;
-            font-size: 2.4rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #5A83F1, #2C3281);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-        }
-        .sub-title {
-            font-family: 'Noto Sans KR', sans-serif;
-            font-size: 1rem;
-            color: #475569;
-            margin-bottom: 12px;
-        }
-        .rating-star {
-            color: #fbbf24;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
+        /* ========== 화이트 글래스모피즘 카드 및 스무스 이징 호버 ========== */
         .ecommerce-card {
-            background: #FFFFFF !important;
-            border: 1px solid #E5EFFF !important;
-            border-radius: 20px;
-            padding: 20px;
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.6) !important;
+            border-radius: 24px;
+            padding: 22px;
             margin-bottom: 24px;
-            transition: transform 0.28s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.28s ease, border-color 0.28s ease;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            height: 580px;
-            box-shadow: 0 10px 30px -5px rgba(90, 131, 241, 0.08) !important;
+            height: 590px;
+            box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.04) !important;
+            transition: all 0.3s ease-in-out !important;
         }
         .ecommerce-card:hover {
-            transform: translateY(-9px);
-            box-shadow: 0 22px 40px rgba(90, 131, 241, 0.18) !important;
-            border-color: #5A83F1 !important;
+            transform: translateY(-8px);
+            box-shadow: 0 30px 60px -15px rgba(90, 131, 241, 0.18) !important;
+            border-color: rgba(90, 131, 241, 0.4) !important;
         }
         .card-badge {
             font-size: 0.7rem;
-            padding: 3px 7px;
-            border-radius: 5px;
-            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 700;
             margin-right: 4px;
             display: inline-block;
-            transition: all 0.18s ease;
+            transition: all 0.3s ease-in-out;
         }
         .card-badge:hover { opacity: 0.8; transform: scale(1.04); }
         .badge-goal { background: #E5EFFF; color: #2C3281; }
-        .badge-platform { background: rgba(90, 131, 241, 0.15); color: #5A83F1; }
-        .badge-form { background: #FAFBFF; color: #475569; border: 1px solid #E5EFFF; }
+        .badge-platform { background: rgba(90, 131, 241, 0.1); color: #5A83F1; }
+        .badge-form { background: rgba(255, 255, 255, 0.6); color: #475569; border: 1px solid rgba(255, 255, 255, 0.8); }
         .buy-btn {
             display: block;
             width: 100%;
             text-align: center;
             background: linear-gradient(135deg, #5A83F1, #2C3281);
             color: white !important;
-            padding: 10px 0;
-            border-radius: 10px;
+            padding: 11px 0;
+            border-radius: 12px;
             font-weight: 700;
             text-decoration: none;
             font-size: 0.88rem;
-            transition: all 0.22s ease;
             margin-top: 10px;
-            box-shadow: 0 4px 12px rgba(90, 131, 241, 0.2);
+            box-shadow: 0 4px 15px rgba(90, 131, 241, 0.15);
+            transition: all 0.3s ease-in-out;
         }
         .buy-btn:hover {
-            opacity: 0.88;
+            opacity: 0.95;
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(90, 131, 241, 0.35);
+            box-shadow: 0 8px 25px rgba(90, 131, 241, 0.3);
         }
 
-        /* ========== 유틸리티 사이드카드 (화이트 배경에 입체적인 섀도우) ========== */
+        /* ========== 유틸리티 사이드카드 (글래스모피즘 & 0.3s 모션) ========== */
         .side-util-card {
-            background: #FFFFFF !important;
-            border: 1px solid #E5EFFF !important;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 18px;
-            box-shadow: 0 10px 30px -5px rgba(90, 131, 241, 0.08) !important;
-            transition: box-shadow 0.25s ease, border-color 0.25s ease;
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.6) !important;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.04) !important;
+            transition: all 0.3s ease-in-out !important;
         }
         .side-util-card:hover {
-            box-shadow: 0 15px 35px rgba(90, 131, 241, 0.12) !important;
-            border-color: #5A83F1;
+            box-shadow: 0 30px 60px -15px rgba(90, 131, 241, 0.12) !important;
+            border-color: rgba(90, 131, 241, 0.3) !important;
         }
         .side-section-label {
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 700;
             color: #2C3281;
             letter-spacing: 1.2px;
             text-transform: uppercase;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         /* ========== 아웃링크 트리플 버튼 덱 ========== */
         .outlink-deck {
             display: flex;
-            gap: 6px;
-            margin-top: 8px;
+            gap: 8px;
+            margin-top: 10px;
         }
         .outlink-btn {
             flex: 1;
             text-align: center;
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 700;
-            padding: 6px 4px;
-            border-radius: 8px;
+            padding: 8px 6px;
+            border-radius: 10px;
             text-decoration: none;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease-in-out;
         }
         .outlink-btn-coupang {
             background: rgba(255, 93, 0, 0.07);
@@ -646,21 +646,22 @@ def main():
         }
         .outlink-btn-iherb:hover { background: rgba(91, 192, 79, 0.15); transform: translateY(-2px); }
 
-        /* ========== 엔터프라이즈 푸터 ========== */
+        /* ========== 미니멀 엔터프라이즈 푸터 ========== */
         .enterprise-footer {
-            background: #FFFFFF !important;
-            border-top: 2px solid #E5EFFF;
-            border-radius: 20px 20px 0 0;
-            padding: 32px 40px;
-            margin-top: 40px;
+            background: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(10px) !important;
+            border-top: 1px solid rgba(90, 131, 241, 0.15) !important;
+            border-radius: 24px 24px 0 0;
+            padding: 36px 48px;
+            margin-top: 48px;
             text-align: center;
-            box-shadow: 0 -10px 30px -5px rgba(90, 131, 241, 0.04) !important;
+            box-shadow: 0 -10px 40px -10px rgba(90, 131, 241, 0.04) !important;
         }
         .footer-logo {
             font-family: 'Outfit', sans-serif;
-            font-size: 1.15rem;
+            font-size: 1.20rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #5A83F1, #2C3281);
+            background: linear-gradient(135deg, #2C3281, #5A83F1);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 8px;
@@ -668,13 +669,13 @@ def main():
         .footer-text {
             font-family: 'Noto Sans KR', sans-serif;
             font-size: 0.78rem;
-            color: #475569;
+            color: #64748b;
             line-height: 1.7;
         }
         .footer-divider {
             border: 0;
-            border-top: 1px solid #E5EFFF;
-            margin: 14px 0;
+            border-top: 1px solid rgba(90, 131, 241, 0.1);
+            margin: 16px 0;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -814,7 +815,7 @@ def main():
                 
                 # 토스 스타일 대형 전체 동의 버튼 (프리미엄 컨테이너 안착)
                 st.markdown("""
-                    <div style="background: #FFFFFF; border: 1px solid #E5EFFF; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px -5px rgba(90, 131, 241, 0.08); margin-bottom: 20px;">
+                    <div style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 24px; padding: 25px; box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.04); margin-bottom: 20px;">
                         <h4 style="margin: 0 0 15px 0; color: #1F2937; font-size: 1.1rem; font-weight: 700;">🥗 안전한 초개인화 진단 시작하기</h4>
                         <p style="font-size: 0.85rem; color: #475569; margin-bottom: 15px; line-height: 1.4;">
                             아래 대형 버튼을 터치하시면 3대 필수 약관(서비스 이용약관, 만 14세 이상 확인, 건강상태/민감정보 수집)에 한 번에 전체 동의하고 즉시 진단 문진 단계로 진입합니다.
@@ -1225,12 +1226,12 @@ def main():
                         comment = "⭐ 적극 권장 (맞춤 매칭)"
                         
                     col.markdown(f"""
-                        <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 18px; margin-bottom: 15px;">
-                            <span style="font-size: 0.85rem; color: #94a3b8;">영양소 성분</span>
-                            <h4 style="margin: 2px 0 6px 0; color: #f8fafc;">{key}</h4>
+                        <div style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 20px; box-shadow: 0 10px 30px -5px rgba(90, 131, 241, 0.04); padding: 18px; margin-bottom: 15px;">
+                            <span style="font-size: 0.85rem; color: #64748b;">영양소 성분</span>
+                            <h4 style="margin: 2px 0 6px 0; color: #1F2937;">{key}</h4>
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-size: 1.8rem; font-weight: 800; color: #10b981;">+{score:.2f}</span>
-                                <span style="font-size: 0.8rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 5px;">{comment}</span>
+                                <span style="font-size: 1.8rem; font-weight: 800; color: #5A83F1;">+{score:.2f}</span>
+                                <span style="font-size: 0.8rem; color: #2C3281; background: #E5EFFF; padding: 2px 6px; border-radius: 5px;">{comment}</span>
                             </div>
                         </div>
                     """, unsafe_allow_html=True)
@@ -1245,18 +1246,18 @@ def main():
                         pass
                 
                 st.markdown(f"""
-                    <div style="background: linear-gradient(135deg, #1e1b4b, #311042); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 12px; padding: 20px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); margin-top: 15px;">
-                        <h4 style="margin: 0 0 10px 0; color: #c084fc; font-family: 'Outfit', 'Noto Sans KR', sans-serif;">🤖 AI 건강 패턴 분석 (ML 가동 대기)</h4>
-                        <p style="font-size: 0.9rem; color: #e9d5ff; margin-bottom: 15px; line-height: 1.4;">
+                    <div style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 20px; padding: 20px; box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.04); margin-top: 15px;">
+                        <h4 style="margin: 0 0 10px 0; color: #2C3281; font-family: 'Outfit', 'Noto Sans KR', sans-serif;">🤖 AI 건강 패턴 분석 (ML 가동 대기)</h4>
+                        <p style="font-size: 0.9rem; color: #475569; margin-bottom: 15px; line-height: 1.4;">
                             수집된 대용량 웰니스 적재 로그를 기반으로 향후 <strong>XGBoost 위험도 분류기</strong> 모델이 연동되는 지능형 분석 영역입니다.
                         </p>
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 8px;">
-                            <span style="font-size: 0.8rem; color: #a78bfa;">📊 문진 데이터 축적 상태</span>
-                            <span style="background: rgba(167, 139, 250, 0.2); color: #f472b6; font-weight: 700; padding: 2px 10px; border-radius: 20px; font-size: 0.85rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: #FAFBFF; border: 1px solid #E5EFFF; padding: 8px 12px; border-radius: 8px;">
+                            <span style="font-size: 0.8rem; color: #2C3281; font-weight:600;">📊 문진 데이터 축적 상태</span>
+                            <span style="background: #E5EFFF; color: #5A83F1; font-weight: 700; padding: 2px 10px; border-radius: 20px; font-size: 0.85rem;">
                                 누적 데이터: {record_count}건
                             </span>
                         </div>
-                        <div style="margin-top: 15px; border-top: 1px dashed rgba(167, 139, 250, 0.2); padding-top: 10px; font-size: 0.75rem; color: #a78bfa; text-align: center;">
+                        <div style="margin-top: 15px; border-top: 1px dashed #E5EFFF; padding-top: 10px; font-size: 0.75rem; color: #475569; text-align: center;">
                             ⏳ 목표 데이터셋 500건 충족 시 AI 심혈관/대사 위험도 스위칭 모듈 활성화
                         </div>
                     </div>
