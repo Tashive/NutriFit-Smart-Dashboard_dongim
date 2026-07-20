@@ -430,26 +430,32 @@ def main():
             border-right: 1px solid rgba(90, 131, 241, 0.1) !important;
         }
         
-        /* ========== 모든 위젯 및 입력 폼 가독성 & 프리미엄 테이밍 (배경 화이트, 텍스트 딥차콜) ========== */
+        /* ========== [최우선 크리티컬] 모든 스텝 내 드롭다운 팝업 리스트 박스 가독성 100% 강제 고정 ========== */
+        [data-baseweb="popover"], div[role="listbox"], ul[role="listbox"], [data-baseweb="menu"] {
+            background-color: #FFFFFF !important;
+            background: #FFFFFF !important;
+            color: #1F2937 !important;
+            border: 1px solid rgba(90, 131, 241, 0.15) !important;
+            border-radius: 12px !important;
+        }
+        [data-baseweb="popover"] li, [data-baseweb="popover"] div, div[role="listbox"] li, div[role="listbox"] div, ul[role="listbox"] li, [data-baseweb="menu"] li {
+            background-color: #FFFFFF !important;
+            background: #FFFFFF !important;
+            color: #1F2937 !important;
+        }
+        [data-baseweb="popover"] li:hover, div[role="listbox"] li:hover, ul[role="listbox"] li:hover, [data-baseweb="menu"] li:hover, [data-baseweb="popover"] li[aria-selected="true"], div[role="listbox"] li[aria-selected="true"] {
+            background-color: #E5EFFF !important;
+            background: #E5EFFF !important;
+            color: #2C3281 !important;
+        }
+        
+        /* ========== 모든 위젯 및 입력 폼 가독성 (배경 화이트, 텍스트 딥차콜) ========== */
         input, select, textarea, [data-baseweb="select"], .stSelectbox div, .stMultiSelect div {
             background-color: #FFFFFF !important;
             color: #1F2937 !important;
             border: 1px solid rgba(90, 131, 241, 0.15) !important;
             border-radius: 12px !important;
             transition: all 0.3s ease-in-out !important;
-        }
-        
-        /* 멀티셀렉트 드롭다운 팝업 리스트 가독성 강제 고정 */
-        div[role="listbox"] {
-            background-color: #FFFFFF !important;
-        }
-        div[role="listbox"] li {
-            color: #1F2937 !important;
-            background-color: #FFFFFF !important;
-        }
-        div[role="listbox"] li:hover {
-            background-color: #E5EFFF !important;
-            color: #2C3281 !important;
         }
         
         /* 포커스 및 선택 시 브랜드 주색 (#5A83F1) 은은한 네온 효과 */
@@ -570,6 +576,7 @@ def main():
             color: #FFFFFF !important;
         }
 
+        /* ========== 메인 타이틀 및 서브 타이틀 디자인 럭셔리 위계 ========== */
         .main-title {
             font-family: 'Outfit', 'Noto Sans KR', sans-serif !important;
             font-size: 3.5rem !important;
