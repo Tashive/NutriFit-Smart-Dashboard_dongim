@@ -396,18 +396,18 @@ def render_product_grid(df_to_render, selected_row, db_data, survey):
 
 def render_nutrient_ring_svg(label: str, percent: int, color: str) -> str:
     """단일 영양소 섭취율을 나타내는 도넛 링 SVG를 반환."""
-    radius = 26
+    radius = 30
     circumference = 2 * 3.14159265 * radius
     offset = circumference * (1 - min(percent, 100) / 100)
     import textwrap
     html_str = f"""
 <div class="nutrient-ring-item">
-    <svg width="64" height="64" viewBox="0 0 64 64">
-        <circle cx="32" cy="32" r="{radius}" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="6"></circle>
-        <circle cx="32" cy="32" r="{radius}" fill="none" stroke="{color}" stroke-width="6"
+    <svg width="72" height="72" viewBox="0 0 72 72">
+        <circle cx="36" cy="36" r="{radius}" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="7"></circle>
+        <circle cx="36" cy="36" r="{radius}" fill="none" stroke="{color}" stroke-width="7"
             stroke-dasharray="{circumference:.1f}" stroke-dashoffset="{offset:.1f}"
-            stroke-linecap="round" transform="rotate(-90 32 32)"></circle>
-        <text x="32" y="37" text-anchor="middle" class="nutrient-ring-value">{percent}%</text>
+            stroke-linecap="round" transform="rotate(-90 36 36)"></circle>
+        <text x="36" y="41" text-anchor="middle" class="nutrient-ring-value">{percent}%</text>
     </svg>
     <div class="nutrient-ring-label">{label}</div>
 </div>
@@ -421,7 +421,7 @@ def render_hero_nutrient_card() -> str:
         ("비타민D", 62, "#8FC3A2"),
         ("마그네슘", 78, "#FFD166"),
         ("오메가3", 45, "#F4A261"),
-        ("아연", 90, "#E9F5EC"),
+        ("아연", 90, "#B7E4C7"),
     ]
     rings_html = "".join(
         render_nutrient_ring_svg(label, pct, color) for label, pct, color in sample_nutrients
@@ -441,516 +441,718 @@ def render_hero_nutrient_card() -> str:
 def main():
     # 프리미엄 CSS 스타일 커스텀 주입
     st.markdown("""
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&family=Newsreader:ital,wght@0,400;1,400;1,500&display=swap');
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&family=Newsreader:ital,wght@0,400;1,400;1,500&display=swap');
 
-        /* ========== 전역 테마: 웰니스 세이지 그린 페일민트 배경 고정 ========== */
-        html, body, [data-testid="stAppViewContainer"] {
-            background: linear-gradient(160deg, #F4FAF5 0%, #EAF6ED 45%, #FFFFFF 100%) !important;
-            color: #2B3B32 !important;
-        }
+/* ========== 전역 테마: 웰니스 세이지 그린 페일민트 배경 고정 ========== */
+html, body, [data-testid="stAppViewContainer"] {
+    background: linear-gradient(160deg, #F4FAF5 0%, #EAF6ED 45%, #FFFFFF 100%) !important;
+    color: #2B3B32 !important;
+}
 
-        /* 이탤릭 세리프 포인트 (헤드라인 강조 단어 전용) */
-        .accent-italic {
-            font-family: 'Newsreader', 'Noto Sans KR', serif !important;
-            font-style: italic;
-            font-weight: 500 !important;
-        }
-        
-        /* 스트림릿 기본 탑 헤더 숨김 처리 */
-        [data-testid="stHeader"] {
-            display: none !important;
-        }
-        
-        /* 메인 콘텐츠 영역 상단 헤드룸 및 와이드 여백 확보 */
-        .main .block-container {
-            padding-top: 130px !important;
-            background: transparent !important;
-        }
+/* 이탤릭 세리프 포인트 (헤드라인 강조 단어 전용) */
+.accent-italic {
+    font-family: 'Newsreader', 'Noto Sans KR', serif !important;
+    font-style: italic;
+    font-weight: 500 !important;
+}
 
-        /* 폰트 및 텍스트 컬러 지정 (정갈하고 정밀한 타이포그래피) */
-        h1, h2, h3, h4, h5, h6, p, label, li {
-            color: #1F2937 !important;
-            font-family: 'Outfit', 'Noto Sans KR', sans-serif !important;
-            letter-spacing: -0.3px !important;
-        }
-        
-        [data-testid="stSidebar"] {
-            background-color: rgba(255, 255, 255, 0.8) !important;
-            backdrop-filter: blur(12px) !important;
-            border-right: 1px solid rgba(76, 122, 94, 0.1) !important;
-        }
-        
-        /* ========== [최우선 크리티컬] 모든 스텝 내 드롭다운 팝업 리스트 박스 가독성 100% 강제 고정 ========== */
-        [data-baseweb="popover"], div[role="listbox"], ul[role="listbox"], [data-baseweb="menu"] {
-            background-color: #FFFFFF !important;
-            background: #FFFFFF !important;
-            color: #1F2937 !important;
-            border: 1px solid rgba(76, 122, 94, 0.15) !important;
-            border-radius: 12px !important;
-        }
-        [data-baseweb="popover"] li, [data-baseweb="popover"] div, div[role="listbox"] li, div[role="listbox"] div, ul[role="listbox"] li, [data-baseweb="menu"] li {
-            background-color: #FFFFFF !important;
-            background: #FFFFFF !important;
-            color: #1F2937 !important;
-        }
-        [data-baseweb="popover"] li:hover, div[role="listbox"] li:hover, ul[role="listbox"] li:hover, [data-baseweb="menu"] li:hover, [data-baseweb="popover"] li[aria-selected="true"], div[role="listbox"] li[aria-selected="true"] {
-            background-color: #E3F1E6 !important;
-            background: #E3F1E6 !important;
-            color: #1F3D2B !important;
-        }
-        
-        /* ========== 모든 위젯 및 입력 폼 가독성 (배경 화이트, 텍스트 딥차콜) ========== */
-        input, select, textarea, [data-baseweb="select"], .stSelectbox div, .stMultiSelect div {
-            background-color: #FFFFFF !important;
-            color: #1F2937 !important;
-            border: 1px solid rgba(76, 122, 94, 0.15) !important;
-            border-radius: 12px !important;
-            transition: all 0.3s ease-in-out !important;
-        }
-        
-        /* 포커스 및 선택 시 브랜드 주색 (#4C7A5E) 은은한 네온 효과 */
-        input:focus, select:focus, textarea:focus {
-            border-color: #4C7A5E !important;
-            box-shadow: 0 0 10px rgba(76, 122, 94, 0.25) !important;
-        }
-        
-        .stRadio label, .stCheckbox label, .stSelectbox label, .stMultiSelect label, .stSlider label, .stTextInput label, .stNumberInput label {
-            color: #1F2937 !important;
-            font-weight: 600 !important;
-        }
-        
-        [data-testid="stWidgetLabel"] p, [data-testid="stMarkdownContainer"] p {
-            color: #1F2937 !important;
-        }
-        
-        /* 멀티셀렉트 선택된 태그 칩 (소프트블루 #E3F1E6 및 딥블루 #1F3D2B 매핑) */
-        [data-baseweb="tag"] {
-            background-color: #E3F1E6 !important;
-            color: #1F3D2B !important;
-            border: 1px solid rgba(76, 122, 94, 0.3) !important;
-            border-radius: 8px !important;
-        }
-        [data-baseweb="tag"] span {
-            color: #1F3D2B !important;
-        }
-        
-        /* ========== 스트림릿 기본 버튼 디자인: 필(pill) 셰이프 + 화이트 글자 강제 고정 ========== */
-        .stButton button {
-            background: linear-gradient(135deg, #4C7A5E, #1F3D2B) !important;
-            color: #FFFFFF !important;
-            border: none !important;
-            border-radius: 999px !important;
-            padding: 10px 28px !important;
-            font-weight: 700 !important;
-            box-shadow: 0 4px 15px rgba(76, 122, 94, 0.15) !important;
-            transition: all 0.3s ease-in-out !important;
-        }
-        .stButton button:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 8px 25px rgba(76, 122, 94, 0.3) !important;
-            opacity: 0.95 !important;
-        }
-        .stButton button p, .stButton button span {
-            color: #FFFFFF !important;
-        }
-        
-        /* ========== 오버도즈 경고 펄스 애니메이션 ========== */
-        @keyframes pulse-warning-anim {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-        .pulse-warning {
-            border: 1px solid rgba(239, 68, 68, 0.4) !important;
-            background-color: rgba(255, 255, 255, 0.95) !important;
-            animation: pulse-warning-anim 2s infinite;
-        }
-        
-        /* ========== GNB 헤더 (오픈칼 스타일 플로팅 화이트 필 카드) ========== */
-        .gnb-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.92);
-            border: 1px solid rgba(76, 122, 94, 0.12);
-            padding: 12px 28px;
-            position: fixed;
-            top: 18px;
-            left: 24px;
-            right: 24px;
-            z-index: 999999;
-            backdrop-filter: blur(20px);
-            border-radius: 999px;
-            box-shadow: 0 15px 40px -12px rgba(31, 61, 43, 0.12);
-            height: 64px;
-            transition: all 0.3s ease-in-out;
-        }
-        .gnb-logo {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.45rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #1F3D2B, #4C7A5E);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
-        }
-        .gnb-nav {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-        .gnb-link {
-            font-family: 'Noto Sans KR', sans-serif;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #475569 !important;
-            padding: 8px 18px;
-            border-radius: 999px;
-            text-decoration: none;
-            transition: all 0.3s ease-in-out;
-            border: 1px solid transparent;
-            cursor: pointer;
-        }
-        .gnb-link:hover {
-            color: #1F3D2B !important;
-            background: rgba(76, 122, 94, 0.08);
-            border-color: rgba(76, 122, 94, 0.1);
-        }
-        .gnb-link-highlight {
-            color: #FFFFFF !important;
-            background: #1F3D2B;
-            box-shadow: 0 4px 15px rgba(31, 61, 43, 0.2);
-        }
-        .gnb-link-highlight:hover {
-            background: #4C7A5E;
-            box-shadow: 0 6px 20px rgba(76, 122, 94, 0.3);
-            color: #FFFFFF !important;
-        }
+/* 스트림릿 기본 탑 헤더 숨김 처리 */
+[data-testid="stHeader"] {
+    display: none !important;
+}
 
-        /* ========== 메인 타이틀 및 서브 타이틀 디자인 럭셔리 위계 ========== */
-        .main-title {
-            font-family: 'Outfit', 'Noto Sans KR', sans-serif !important;
-            font-size: 3.5rem !important;
-            font-weight: 800 !important;
-            background: linear-gradient(90deg, #1F3D2B, #4C7A5E) !important;
-            -webkit-background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
-            margin-bottom: 16px !important;
-            line-height: 1.15 !important;
-            letter-spacing: -1px !important;
-        }
-        .sub-title {
-            font-family: 'Noto Sans KR', sans-serif !important;
-            font-size: 16px !important;
-            color: #4B5563 !important;
-            margin-bottom: 40px !important;
-            font-weight: 500 !important;
-            letter-spacing: -0.2px !important;
-        }
+/* 메인 콘텐츠 영역 상단 헤드룸 및 와이드 여백 확보 */
+/* 메인 콘텐츠 영역 상단 헤드룸 — 신/구 Streamlit 셀렉터 모두 커버 (fixed GNB에 제목이 가려지는 문제 방지) */
+.main .block-container,
+[data-testid="stMain"] .block-container,
+[data-testid="stMainBlockContainer"],
+section.main > div.block-container {
+    padding-top: 130px !important;
+    background: transparent !important;
+}
 
-        /* ========== 히어로 패널 (오픈칼 스타일 딥세이지 대각 그라데이션) ========== */
-        .hero-panel {
-            background: linear-gradient(135deg, #12281B 0%, #2F5C41 48%, #8FC3A2 100%);
-            border-radius: 32px;
-            padding: 56px 48px 48px 48px;
-            margin-bottom: 36px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 30px 70px -20px rgba(18, 40, 27, 0.35);
-        }
-        .hero-panel .main-title {
-            background: none !important;
-            -webkit-text-fill-color: #FFFFFF !important;
-            color: #FFFFFF !important;
-        }
-        .hero-panel .sub-title {
-            color: rgba(255, 255, 255, 0.82) !important;
-        }
-        .hero-flex {
-            display: flex;
-            align-items: center;
-            gap: 32px;
-            position: relative;
-            z-index: 1;
-        }
-        .hero-flex-text {
-            flex: 1.3;
-            min-width: 0;
-        }
-        .hero-flex-visual {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-        }
-        .hero-glass-card {
-            background: rgba(255, 255, 255, 0.14);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: 24px;
-            padding: 24px 22px;
-            width: 100%;
-            max-width: 300px;
-            box-shadow: 0 20px 45px -15px rgba(18, 40, 27, 0.4);
-        }
-        .hero-glass-card .glass-title {
-            font-family: 'Noto Sans KR', sans-serif;
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 14px;
-            text-align: center;
-        }
-        .nutrient-ring-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-        }
-        .nutrient-ring-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-        }
-        .nutrient-ring-label {
-            font-family: 'Noto Sans KR', sans-serif;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.85);
-            text-align: center;
-        }
-        .nutrient-ring-value {
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.72rem;
-            font-weight: 700;
-            fill: #FFFFFF;
-        }
-        @media (max-width: 900px) {
-            .hero-flex { flex-direction: column; }
-            .hero-flex-visual { justify-content: flex-start; }
-        }
-        .sidebar-divider {
-            border: 0;
-            border-top: 1px solid rgba(76, 122, 94, 0.18);
-            margin: 18px 0;
-        }
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(255, 255, 255, 0.14);
-            border: 1px solid rgba(255, 255, 255, 0.28);
-            color: #FFFFFF;
-            padding: 7px 16px;
-            border-radius: 999px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            margin-bottom: 22px;
-            backdrop-filter: blur(6px);
-        }
+/* 폰트 및 텍스트 컬러 지정 (정갈하고 정밀한 타이포그래피) */
+h1, h2, h3, h4, h5, h6, p, label, li {
+    color: #1F2937 !important;
+    font-family: 'Outfit', 'Noto Sans KR', sans-serif !important;
+    letter-spacing: -0.3px !important;
+}
 
-        /* ========== 화이트 글래스모피즘 카드 및 스무스 이징 호버 ========== */
-        .ecommerce-card {
-            background: rgba(255, 255, 255, 0.9) !important;
-            backdrop-filter: blur(8px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.5) !important;
-            border-radius: 24px;
-            padding: 22px;
-            margin-bottom: 24px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 590px;
-            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05) !important;
-            transition: all 0.3s ease-in-out !important;
-        }
-        .ecommerce-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 30px 60px -15px rgba(76, 122, 94, 0.18) !important;
-            border-color: rgba(76, 122, 94, 0.4) !important;
-        }
-        .card-badge {
-            font-size: 0.7rem;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-weight: 700;
-            margin-right: 4px;
-            display: inline-block;
-            transition: all 0.3s ease-in-out;
-        }
-        .card-badge:hover { opacity: 0.8; transform: scale(1.04); }
-        .badge-goal { background: #E3F1E6; color: #1F3D2B; }
-        .badge-platform { background: rgba(76, 122, 94, 0.1); color: #4C7A5E; }
-        .badge-form { background: rgba(255, 255, 255, 0.6); color: #475569; border: 1px solid rgba(255, 255, 255, 0.8); }
-        .buy-btn {
-            display: block;
-            width: 100%;
-            text-align: center;
-            background: linear-gradient(135deg, #4C7A5E, #1F3D2B);
-            color: white !important;
-            padding: 11px 0;
-            border-radius: 12px;
-            font-weight: 700;
-            text-decoration: none;
-            font-size: 0.88rem;
-            margin-top: 10px;
-            box-shadow: 0 4px 15px rgba(76, 122, 94, 0.15);
-            transition: all 0.3s ease-in-out;
-        }
-        .buy-btn:hover {
-            opacity: 0.95;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(76, 122, 94, 0.3);
-        }
+[data-testid="stSidebar"] {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(12px) !important;
+    border-right: 1px solid rgba(76, 122, 94, 0.1) !important;
+}
 
-        /* ========== 유틸리티 사이드카드 (글래스모피즘 & 0.3s 모션) ========== */
-        .side-util-card {
-            background: rgba(255, 255, 255, 0.9) !important;
-            backdrop-filter: blur(8px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.5) !important;
-            border-radius: 24px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05) !important;
-            transition: all 0.3s ease-in-out !important;
-        }
-        .side-util-card:hover {
-            box-shadow: 0 30px 60px -15px rgba(76, 122, 94, 0.12) !important;
-            border-color: rgba(76, 122, 94, 0.3) !important;
-        }
-        .side-section-label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #1F3D2B;
-            letter-spacing: 1.2px;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-        }
+/* ==================================================================
+   [폼 위젯 CSS 전면 재작성 — BaseWeb 정밀 타겟팅]
+   원칙: 바깥 컨테이너 "한 겹"에만 박스 스타일을 주고,
+   내부의 모든 중첩 div는 배경/테두리를 완전 초기화한다.
+   (이전 버전은 .stSelectbox div 전체에 테두리를 강제해
+    셀렉트가 여러 겹 박스로 깨져 보이던 원인이었음)
+   ================================================================== */
 
-        /* ========== 아웃링크 트리플 버튼 덱 ========== */
-        .outlink-deck {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .outlink-btn {
-            flex: 1;
-            text-align: center;
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 8px 6px;
-            border-radius: 10px;
-            text-decoration: none;
-            transition: all 0.3s ease-in-out;
-        }
-        .outlink-btn-coupang {
-            background: rgba(255, 93, 0, 0.07);
-            color: #ff7a30;
-            border: 1px solid rgba(255, 93, 0, 0.2);
-        }
-        .outlink-btn-coupang:hover { background: rgba(255, 93, 0, 0.15); transform: translateY(-2px); }
-        .outlink-btn-naver {
-            background: rgba(3, 199, 90, 0.07);
-            color: #03c75a;
-            border: 1px solid rgba(3, 199, 90, 0.2);
-        }
-        .outlink-btn-naver:hover { background: rgba(3, 199, 90, 0.15); transform: translateY(-2px); }
-        .outlink-btn-iherb {
-            background: rgba(91, 192, 79, 0.07);
-            color: #5bc04f;
-            border: 1px solid rgba(91, 192, 79, 0.2);
-        }
-        .outlink-btn-iherb:hover { background: rgba(91, 192, 79, 0.15); transform: translateY(-2px); }
+/* 1) 셀렉트/멀티셀렉트 내부 중첩 요소 전부 초기화 — 깨짐 방지의 핵심 */
+.stSelectbox [data-baseweb="select"] div,
+.stMultiSelect [data-baseweb="select"] div {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #1F2937 !important;
+}
 
-        /* ========== 미니멀 엔터프라이즈 푸터 ========== */
-        .enterprise-footer {
-            background: rgba(255, 255, 255, 0.8) !important;
-            backdrop-filter: blur(10px) !important;
-            border-top: 1px solid rgba(76, 122, 94, 0.15) !important;
-            border-radius: 24px 24px 0 0;
-            padding: 36px 48px;
-            margin-top: 48px;
-            text-align: center;
-            box-shadow: 0 -10px 40px -10px rgba(76, 122, 94, 0.04) !important;
-        }
-        .footer-logo {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.20rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #1F3D2B, #4C7A5E);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-        }
-        .footer-text {
-            font-family: 'Noto Sans KR', sans-serif;
-            font-size: 0.78rem;
-            color: #64748b;
-            line-height: 1.7;
-        }
-        .footer-divider {
-            border: 0;
-            border-top: 1px solid rgba(76, 122, 94, 0.1);
-            margin: 16px 0;
-        }
+/* 2) 컨트롤(닫힌 상태) 바깥 한 겹에만 화이트 박스 스타일 부여 */
+.stSelectbox [data-baseweb="select"] > div:first-child,
+.stMultiSelect [data-baseweb="select"] > div:first-child {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid rgba(76, 122, 94, 0.28) !important;
+    border-radius: 12px !important;
+    min-height: 44px !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+.stSelectbox [data-baseweb="select"] > div:first-child:hover,
+.stMultiSelect [data-baseweb="select"] > div:first-child:hover {
+    border-color: #4C7A5E !important;
+}
+.stSelectbox [data-baseweb="select"] > div:first-child:focus-within,
+.stMultiSelect [data-baseweb="select"] > div:first-child:focus-within {
+    border-color: #4C7A5E !important;
+    box-shadow: 0 0 0 3px rgba(76, 122, 94, 0.15) !important;
+}
 
-        /* ========== 사이드바 브랜드 톤 통일 (화이트 글래스모피즘 + 세이지 포인트) ========== */
-        [data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #F4FAF5 0%, #EAF6ED 100%);
-            border-right: 1px solid rgba(76, 122, 94, 0.12);
-        }
-        [data-testid="stSidebar"] > div {
-            padding-top: 1.2rem;
-        }
-        [data-testid="stSidebar"] h1,
-        [data-testid="stSidebar"] h2,
-        [data-testid="stSidebar"] h3,
-        [data-testid="stSidebar"] label,
-        [data-testid="stSidebar"] p {
-            font-family: 'Noto Sans KR', sans-serif !important;
-            color: #1F3D2B !important;
-        }
-        [data-testid="stSidebar"] [role="radiogroup"] {
-            background: rgba(255, 255, 255, 0.65);
-            border: 1px solid rgba(76, 122, 94, 0.15);
-            border-radius: 16px;
-            padding: 10px;
-            gap: 4px;
-        }
-        [data-testid="stSidebar"] [role="radiogroup"] label {
-            border-radius: 10px;
-            padding: 8px 10px;
-            transition: background 0.2s ease-in-out;
-        }
-        [data-testid="stSidebar"] [role="radiogroup"] label:hover {
-            background: rgba(76, 122, 94, 0.1);
-        }
-        [data-testid="stSidebar"] .streamlit-expanderHeader {
-            background: rgba(255, 255, 255, 0.7) !important;
-            border: 1px solid rgba(76, 122, 94, 0.15) !important;
-            border-radius: 14px !important;
-            color: #1F3D2B !important;
-            font-weight: 600 !important;
-        }
-        [data-testid="stSidebar"] .stTextInput input {
-            border-radius: 10px !important;
-            border: 1px solid rgba(76, 122, 94, 0.25) !important;
-        }
-        [data-testid="stSidebar"] .stButton button {
-            background: #1F3D2B !important;
-            color: #FFFFFF !important;
-            border-radius: 999px !important;
-            border: none !important;
-        }
-        [data-testid="stSidebar"] .stButton button:hover {
-            background: #4C7A5E !important;
-        }
-        [data-testid="stSidebar"] hr {
-            border-top: 1px solid rgba(76, 122, 94, 0.18) !important;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+/* 3) 선택된 값 텍스트, 플레이스홀더, 화살표/클리어 아이콘 색상 통일 */
+.stSelectbox [data-baseweb="select"] *,
+.stMultiSelect [data-baseweb="select"] * {
+    color: #1F2937 !important;
+    -webkit-text-fill-color: #1F2937 !important;
+}
+.stSelectbox [data-baseweb="select"] svg,
+.stMultiSelect [data-baseweb="select"] svg {
+    fill: #4C7A5E !important;
+}
+.stSelectbox [data-baseweb="select"] input,
+.stMultiSelect [data-baseweb="select"] input {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* 4) 드롭다운 팝업(포탈 렌더링) — 패널 한 겹만 스타일, 내부는 투명 */
+div[data-baseweb="popover"] {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+div[data-baseweb="popover"] > div,
+div[data-baseweb="popover"] [data-baseweb="menu"],
+ul[role="listbox"] {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid rgba(76, 122, 94, 0.18) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 12px 32px -8px rgba(31, 61, 43, 0.18) !important;
+    overflow: hidden !important;
+}
+div[data-baseweb="popover"] > div > div,
+ul[role="listbox"] > div {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* 5) 옵션 항목 — 기본/hover/선택 상태 3단 컬러 명시 */
+li[role="option"], [data-baseweb="menu"] li {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    color: #1F2937 !important;
+    -webkit-text-fill-color: #1F2937 !important;
+    font-family: 'Outfit', 'Noto Sans KR', sans-serif !important;
+    font-size: 0.92rem !important;
+    padding: 10px 14px !important;
+    cursor: pointer !important;
+}
+li[role="option"] * , [data-baseweb="menu"] li * {
+    color: #1F2937 !important;
+    -webkit-text-fill-color: #1F2937 !important;
+    background: transparent !important;
+}
+li[role="option"]:hover, [data-baseweb="menu"] li:hover {
+    background: #EAF6ED !important;
+    background-color: #EAF6ED !important;
+}
+li[role="option"][aria-selected="true"] {
+    background: #E3F1E6 !important;
+    background-color: #E3F1E6 !important;
+}
+li[role="option"][aria-selected="true"] * {
+    color: #1F3D2B !important;
+    -webkit-text-fill-color: #1F3D2B !important;
+    font-weight: 700 !important;
+}
+
+/* 6) 텍스트/비밀번호/숫자 입력 — 테두리는 "컨테이너 한 겹"에만, 내부 input은 투명
+      (비밀번호 눈알 버튼, 숫자 ± 스텝퍼가 다크로 남던 원인 제거) */
+.stTextInput [data-baseweb="input"],
+.stTextInput [data-baseweb="base-input"],
+.stTextArea [data-baseweb="textarea"],
+.stNumberInput [data-baseweb="input"],
+[data-testid="stNumberInputContainer"] {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid rgba(76, 122, 94, 0.28) !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: none !important;
+}
+.stTextInput [data-baseweb="input"] input,
+.stTextInput [data-baseweb="base-input"] input,
+.stTextArea textarea,
+.stNumberInput [data-baseweb="input"] input,
+[data-testid="stNumberInputContainer"] input {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: #1F2937 !important;
+    -webkit-text-fill-color: #1F2937 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+.stTextInput [data-baseweb="input"]:focus-within,
+.stTextInput [data-baseweb="base-input"]:focus-within,
+.stTextArea [data-baseweb="textarea"]:focus-within,
+.stNumberInput [data-baseweb="input"]:focus-within,
+[data-testid="stNumberInputContainer"]:focus-within {
+    border-color: #4C7A5E !important;
+    box-shadow: 0 0 0 3px rgba(76, 122, 94, 0.15) !important;
+}
+/* 비밀번호 눈알(표시/숨김) 토글 버튼 — 다크 배경 제거, 세이지 아이콘 */
+.stTextInput button,
+.stTextInput [data-baseweb="input"] button {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #4C7A5E !important;
+}
+.stTextInput button svg,
+.stTextInput [data-baseweb="input"] button svg {
+    fill: #4C7A5E !important;
+}
+/* 숫자 입력 ± 스텝퍼 버튼 — 다크 캡 제거, 페일민트 배경 + 세이지 기호 */
+.stNumberInput button,
+[data-testid="stNumberInputStepDown"],
+[data-testid="stNumberInputStepUp"] {
+    background: #F4FAF5 !important;
+    background-color: #F4FAF5 !important;
+    color: #4C7A5E !important;
+    border: none !important;
+    border-left: 1px solid rgba(76, 122, 94, 0.15) !important;
+    box-shadow: none !important;
+}
+.stNumberInput button:hover {
+    background: #EAF6ED !important;
+}
+.stNumberInput button svg {
+    fill: #4C7A5E !important;
+}
+
+/* 6-1) 익스팬더(로그인/약관 패널 등) — 다크 헤더 잔재 제거, 화이트 글래스 통일 */
+[data-testid="stExpander"] details {
+    background: rgba(255, 255, 255, 0.92) !important;
+    border: 1px solid rgba(76, 122, 94, 0.18) !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    box-shadow: 0 6px 18px -6px rgba(76, 122, 94, 0.10) !important;
+}
+[data-testid="stExpander"] summary {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    color: #1F3D2B !important;
+    border-radius: 0 !important;
+}
+[data-testid="stExpander"] summary p,
+[data-testid="stExpander"] summary span {
+    color: #1F3D2B !important;
+    font-weight: 700 !important;
+}
+[data-testid="stExpander"] summary:hover {
+    background: #F4FAF5 !important;
+}
+[data-testid="stExpander"] summary svg {
+    fill: #4C7A5E !important;
+    color: #4C7A5E !important;
+}
+[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+    background: #FFFFFF !important;
+}
+
+/* 7) 위젯 라벨 */
+.stRadio label, .stCheckbox label, .stSelectbox label, .stMultiSelect label,
+.stSlider label, .stTextInput label, .stNumberInput label {
+    color: #1F2937 !important;
+    font-weight: 600 !important;
+}
+
+/* 8) 멀티셀렉트 선택 태그 칩 */
+[data-baseweb="tag"] {
+    background: #E3F1E6 !important;
+    background-color: #E3F1E6 !important;
+    border: 1px solid rgba(76, 122, 94, 0.3) !important;
+    border-radius: 8px !important;
+}
+[data-baseweb="tag"], [data-baseweb="tag"] span, [data-baseweb="tag"] svg {
+    color: #1F3D2B !important;
+    -webkit-text-fill-color: #1F3D2B !important;
+    fill: #1F3D2B !important;
+}
+
+/* ========== 스트림릿 기본 버튼 디자인: 필(pill) 셰이프 + 화이트 글자 강제 고정 ========== */
+.stButton button {
+    background: linear-gradient(135deg, #4C7A5E, #1F3D2B) !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: 999px !important;
+    padding: 10px 28px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 15px rgba(76, 122, 94, 0.15) !important;
+    transition: all 0.3s ease-in-out !important;
+}
+.stButton button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(76, 122, 94, 0.3) !important;
+    opacity: 0.95 !important;
+}
+.stButton button p, .stButton button span {
+    color: #FFFFFF !important;
+}
+
+/* ========== 오버도즈 경고 펄스 애니메이션 ========== */
+@keyframes pulse-warning-anim {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+.pulse-warning {
+    border: 1px solid rgba(239, 68, 68, 0.4) !important;
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    animation: pulse-warning-anim 2s infinite;
+}
+
+/* ========== GNB 헤더 (오픈칼 스타일 플로팅 화이트 필 카드) ========== */
+.gnb-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(76, 122, 94, 0.12);
+    padding: 12px 28px;
+    position: fixed;
+    top: 18px;
+    left: 24px;
+    right: 24px;
+    z-index: 999999;
+    backdrop-filter: blur(20px);
+    border-radius: 999px;
+    box-shadow: 0 15px 40px -12px rgba(31, 61, 43, 0.12);
+    height: 64px;
+    transition: all 0.3s ease-in-out;
+}
+.gnb-logo {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.45rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #1F3D2B, #4C7A5E);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+}
+.gnb-nav {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+.gnb-link {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569 !important;
+    padding: 8px 18px;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: all 0.3s ease-in-out;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+.gnb-link:hover {
+    color: #1F3D2B !important;
+    background: rgba(76, 122, 94, 0.08);
+    border-color: rgba(76, 122, 94, 0.1);
+}
+.gnb-link-highlight {
+    color: #FFFFFF !important;
+    background: #1F3D2B;
+    box-shadow: 0 4px 15px rgba(31, 61, 43, 0.2);
+}
+.gnb-link-highlight:hover {
+    background: #4C7A5E;
+    box-shadow: 0 6px 20px rgba(76, 122, 94, 0.3);
+    color: #FFFFFF !important;
+}
+
+/* ========== 메인 타이틀 및 서브 타이틀 디자인 럭셔리 위계 ========== */
+.main-title {
+    font-family: 'Outfit', 'Noto Sans KR', sans-serif !important;
+    font-size: 3.5rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(90deg, #1F3D2B, #4C7A5E) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    margin-bottom: 16px !important;
+    line-height: 1.15 !important;
+    letter-spacing: -1px !important;
+}
+.sub-title {
+    font-family: 'Noto Sans KR', sans-serif !important;
+    font-size: 16px !important;
+    color: #4B5563 !important;
+    margin-bottom: 40px !important;
+    font-weight: 500 !important;
+    letter-spacing: -0.2px !important;
+}
+
+/* ========== 히어로 패널 (오픈칼 스타일 딥세이지 대각 그라데이션) ========== */
+.hero-panel {
+    background: linear-gradient(135deg, #12281B 0%, #2F5C41 48%, #8FC3A2 100%);
+    border-radius: 32px;
+    padding: 56px 48px 48px 48px;
+    margin-bottom: 36px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 30px 70px -20px rgba(18, 40, 27, 0.35);
+}
+.hero-panel .main-title {
+    background: none !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+    color: #FFFFFF !important;
+}
+.hero-panel .hero-desc {
+    color: rgba(255, 255, 255, 0.92) !important;
+    font-size: 1.02rem;
+    line-height: 1.7;
+    margin: 14px 0 16px 0;
+    font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+}
+.hero-panel .sub-title {
+    color: rgba(255, 255, 255, 0.68) !important;
+    font-size: 0.85rem !important;
+    letter-spacing: 0.2px;
+    text-transform: none;
+}
+.hero-flex {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    position: relative;
+    z-index: 1;
+}
+.hero-flex-text {
+    flex: 1.15;
+    min-width: 0;
+}
+.hero-flex-visual {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.hero-glass-card {
+    background: rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 24px;
+    padding: 26px 28px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 20px 45px -15px rgba(18, 40, 27, 0.4);
+}
+.hero-glass-card .glass-title {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.92);
+    margin-bottom: 18px;
+    text-align: center;
+}
+/* 링 4개를 정확히 4등분 그리드로 균등 배치 (flex space-between의 들쭉날쭉한 간격 제거) */
+.nutrient-ring-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    justify-items: center;
+    gap: 8px;
+}
+.nutrient-ring-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+.nutrient-ring-label {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.88);
+    text-align: center;
+    white-space: nowrap;
+}
+.nutrient-ring-value {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    fill: #FFFFFF;
+}
+/* 탭(로그인/회원가입 등) 강조색 — 기본 레드를 브랜드 세이지로 통일 */
+.stTabs [data-baseweb="tab-list"] button {
+    color: #64748b !important;
+}
+.stTabs [data-baseweb="tab-list"] button[aria-selected="true"],
+.stTabs [data-baseweb="tab-list"] button[aria-selected="true"] p {
+    color: #1F3D2B !important;
+    font-weight: 700 !important;
+}
+.stTabs [data-baseweb="tab-highlight"] {
+    background-color: #4C7A5E !important;
+}
+.stTabs [data-baseweb="tab-border"] {
+    background-color: rgba(76, 122, 94, 0.18) !important;
+}
+@media (max-width: 900px) {
+    .hero-flex { flex-direction: column; }
+    .hero-flex-visual { justify-content: flex-start; }
+}
+.sidebar-divider {
+    border: 0;
+    border-top: 1px solid rgba(76, 122, 94, 0.18);
+    margin: 18px 0;
+}
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #FFFFFF;
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-bottom: 22px;
+    backdrop-filter: blur(6px);
+}
+
+/* ========== 화이트 글래스모피즘 카드 및 스무스 이징 호버 ========== */
+.ecommerce-card {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    border-radius: 24px;
+    padding: 22px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 590px;
+    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05) !important;
+    transition: all 0.3s ease-in-out !important;
+}
+.ecommerce-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 30px 60px -15px rgba(76, 122, 94, 0.18) !important;
+    border-color: rgba(76, 122, 94, 0.4) !important;
+}
+.card-badge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    margin-right: 4px;
+    display: inline-block;
+    transition: all 0.3s ease-in-out;
+}
+.card-badge:hover { opacity: 0.8; transform: scale(1.04); }
+.badge-goal { background: #E3F1E6; color: #1F3D2B; }
+.badge-platform { background: rgba(76, 122, 94, 0.1); color: #4C7A5E; }
+.badge-form { background: rgba(255, 255, 255, 0.6); color: #475569; border: 1px solid rgba(255, 255, 255, 0.8); }
+.buy-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: linear-gradient(135deg, #4C7A5E, #1F3D2B);
+    color: white !important;
+    padding: 11px 0;
+    border-radius: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 0.88rem;
+    margin-top: 10px;
+    box-shadow: 0 4px 15px rgba(76, 122, 94, 0.15);
+    transition: all 0.3s ease-in-out;
+}
+.buy-btn:hover {
+    opacity: 0.95;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(76, 122, 94, 0.3);
+}
+
+/* ========== 유틸리티 사이드카드 (글래스모피즘 & 0.3s 모션) ========== */
+.side-util-card {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    border-radius: 24px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05) !important;
+    transition: all 0.3s ease-in-out !important;
+}
+.side-util-card:hover {
+    box-shadow: 0 30px 60px -15px rgba(76, 122, 94, 0.12) !important;
+    border-color: rgba(76, 122, 94, 0.3) !important;
+}
+.side-section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #1F3D2B;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+/* ========== 아웃링크 트리플 버튼 덱 ========== */
+.outlink-deck {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+.outlink-btn {
+    flex: 1;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 8px 6px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.3s ease-in-out;
+}
+.outlink-btn-coupang {
+    background: rgba(255, 93, 0, 0.07);
+    color: #ff7a30;
+    border: 1px solid rgba(255, 93, 0, 0.2);
+}
+.outlink-btn-coupang:hover { background: rgba(255, 93, 0, 0.15); transform: translateY(-2px); }
+.outlink-btn-naver {
+    background: rgba(3, 199, 90, 0.07);
+    color: #03c75a;
+    border: 1px solid rgba(3, 199, 90, 0.2);
+}
+.outlink-btn-naver:hover { background: rgba(3, 199, 90, 0.15); transform: translateY(-2px); }
+.outlink-btn-iherb {
+    background: rgba(91, 192, 79, 0.07);
+    color: #5bc04f;
+    border: 1px solid rgba(91, 192, 79, 0.2);
+}
+.outlink-btn-iherb:hover { background: rgba(91, 192, 79, 0.15); transform: translateY(-2px); }
+
+/* ========== 미니멀 엔터프라이즈 푸터 ========== */
+.enterprise-footer {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(10px) !important;
+    border-top: 1px solid rgba(76, 122, 94, 0.15) !important;
+    border-radius: 24px 24px 0 0;
+    padding: 36px 48px;
+    margin-top: 48px;
+    text-align: center;
+    box-shadow: 0 -10px 40px -10px rgba(76, 122, 94, 0.04) !important;
+}
+.footer-logo {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.20rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #1F3D2B, #4C7A5E);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+}
+.footer-text {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.78rem;
+    color: #64748b;
+    line-height: 1.7;
+}
+.footer-divider {
+    border: 0;
+    border-top: 1px solid rgba(76, 122, 94, 0.1);
+    margin: 16px 0;
+}
+
+/* ========== 사이드바 브랜드 톤 통일 (화이트 글래스모피즘 + 세이지 포인트) ========== */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #F4FAF5 0%, #EAF6ED 100%);
+    border-right: 1px solid rgba(76, 122, 94, 0.12);
+}
+[data-testid="stSidebar"] > div {
+    padding-top: 1.2rem;
+}
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] p {
+    font-family: 'Noto Sans KR', sans-serif !important;
+    color: #1F3D2B !important;
+}
+[data-testid="stSidebar"] [role="radiogroup"] {
+    background: rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(76, 122, 94, 0.15);
+    border-radius: 16px;
+    padding: 10px;
+    gap: 4px;
+}
+[data-testid="stSidebar"] [role="radiogroup"] label {
+    border-radius: 10px;
+    padding: 8px 10px;
+    transition: background 0.2s ease-in-out;
+}
+[data-testid="stSidebar"] [role="radiogroup"] label:hover {
+    background: rgba(76, 122, 94, 0.1);
+}
+[data-testid="stSidebar"] .streamlit-expanderHeader {
+    background: rgba(255, 255, 255, 0.7) !important;
+    border: 1px solid rgba(76, 122, 94, 0.15) !important;
+    border-radius: 14px !important;
+    color: #1F3D2B !important;
+    font-weight: 600 !important;
+}
+[data-testid="stSidebar"] .stTextInput input {
+    border-radius: 10px !important;
+    border: 1px solid rgba(76, 122, 94, 0.25) !important;
+}
+[data-testid="stSidebar"] .stButton button {
+    background: #1F3D2B !important;
+    color: #FFFFFF !important;
+    border-radius: 999px !important;
+    border: none !important;
+}
+[data-testid="stSidebar"] .stButton button:hover {
+    background: #4C7A5E !important;
+}
+[data-testid="stSidebar"] hr {
+    border-top: 1px solid rgba(76, 122, 94, 0.18) !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
     # ===== 최상단 브랜드 GNB 헤더 (순수 브랜드 바 — 클릭 불가 죽은 링크 제거) =====
     if 'user_logged_in' not in st.session_state:
@@ -965,13 +1167,13 @@ def main():
         if st.session_state.user_logged_in else "&#x1F7E2; AI 맞춤 추천 진행 중"
     )
     st.markdown(f"""
-        <div class="gnb-header">
-            <div class="gnb-logo">&#x1F957; NutriFit</div>
-            <div class="gnb-nav">
-                <span class="gnb-link gnb-link-highlight">{_gnb_status_label}</span>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+<div class="gnb-header">
+    <div class="gnb-logo">&#x1F957; NutriFit</div>
+    <div class="gnb-nav">
+        <span class="gnb-link gnb-link-highlight">{_gnb_status_label}</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
     # ===== 로그인/회원가입/관리자 인증은 메인 화면에서 완전히 제거, 사이드바 최하단으로 이동 =====
     # 관리자 페이지는 URL 쿼리 파라미터(?admin=1)로 접근했을 때만 사이드바에 노출
@@ -1039,13 +1241,13 @@ def main():
         badge_color = "#10b981" if st.session_state.user_logged_in else "#ef4444"
         
         st.markdown(f"""
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <div></div>
-                <div style="background: {badge_color}; color: white; padding: 5px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
-                    {badge_label}
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div></div>
+    <div style="background: {badge_color}; color: white; padding: 5px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
+        {badge_label}
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
     import textwrap
     hero_html = f"""
@@ -1053,7 +1255,8 @@ def main():
     <div class="hero-flex">
         <div class="hero-flex-text">
             <span class="hero-badge">🌿 Beta 오픈 중</span>
-            <div class="main-title">나에게 꼭 맞는<br>영양 <span class="accent-italic">밸런스</span>를 찾아드립니다</div>
+            <div class="main-title">NutriFit – AI 개인 맞춤형<br>영양제 <span class="accent-italic">진단</span></div>
+            <div class="hero-desc">나에게 꼭 맞는 영양제를 찾아드립니다.<br>나이·성별부터 음주·흡연·운동 같은 생활 습관, 지병·알약 삼킴 편의까지 —<br>나를 이루는 정보들을 종합해 지금 내 몸에 필요한 영양제만 골라 추천해 드려요.</div>
             <div class="sub-title">식약처 공인 데이터베이스 및 초개인화 가중 스코어링 기반 웰니스 큐레이션</div>
         </div>
         <div class="hero-flex-visual">
@@ -1098,23 +1301,23 @@ def main():
             with landing_col1:
                 # 좌측: 프리미엄 텍스트 & 약관 동의
                 st.markdown("""
-                    <div style="background: rgba(76, 122, 94, 0.1); border: 1px solid rgba(76, 122, 94, 0.2); border-radius: 20px; padding: 6px 14px; width: fit-content; margin-bottom: 15px;">
-                        <span style="color: #4C7A5E; font-weight: 700; font-size: 0.85rem;">📊 식약처 데이터 및 ML 기반 초개인화 엔진</span>
-                    </div>
-                    <p style="color: #475569; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;">
-                        단순한 추천을 넘어 23개 신체 변수 연산, Scikit-Learn 머신러닝 위험도 예측, 식약처 상한 섭취량 실시간 검증을 통해 가장 안전한 영양 조합과 복용 타임라인을 도출합니다.
-                    </p>
-                """, unsafe_allow_html=True)
+<div style="background: rgba(76, 122, 94, 0.1); border: 1px solid rgba(76, 122, 94, 0.2); border-radius: 20px; padding: 6px 14px; width: fit-content; margin-bottom: 15px;">
+    <span style="color: #4C7A5E; font-weight: 700; font-size: 0.85rem;">📊 식약처 데이터 및 ML 기반 초개인화 엔진</span>
+</div>
+<p style="color: #475569; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;">
+    단순한 추천을 넘어 23개 신체 변수 연산, Scikit-Learn 머신러닝 위험도 예측, 식약처 상한 섭취량 실시간 검증을 통해 가장 안전한 영양 조합과 복용 타임라인을 도출합니다.
+</p>
+""", unsafe_allow_html=True)
                 
                 # 토스 스타일 대형 전체 동의 버튼 (프리미엄 컨테이너 안착)
                 st.markdown("""
-                    <div style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 24px; padding: 25px; box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.04); margin-bottom: 20px;">
-                        <h4 style="margin: 0 0 15px 0; color: #1F2937; font-size: 1.1rem; font-weight: 700;">🥗 안전한 초개인화 진단 시작하기</h4>
-                        <p style="font-size: 0.85rem; color: #475569; margin-bottom: 15px; line-height: 1.4;">
-                            아래 대형 버튼을 터치하시면 3대 필수 약관(서비스 이용약관, 만 14세 이상 확인, 건강상태/민감정보 수집)에 한 번에 전체 동의하고 즉시 진단 문진 단계로 진입합니다.
-                        </p>
-                    </div>
-                """, unsafe_allow_html=True)
+<div style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 24px; padding: 25px; box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.04); margin-bottom: 20px;">
+    <h4 style="margin: 0 0 15px 0; color: #1F2937; font-size: 1.1rem; font-weight: 700;">🥗 안전한 초개인화 진단 시작하기</h4>
+    <p style="font-size: 0.85rem; color: #475569; margin-bottom: 15px; line-height: 1.4;">
+        아래 대형 버튼을 터치하시면 3대 필수 약관(서비스 이용약관, 만 14세 이상 확인, 건강상태/민감정보 수집)에 한 번에 전체 동의하고 즉시 진단 문진 단계로 진입합니다.
+    </p>
+</div>
+""", unsafe_allow_html=True)
                 
                 if st.button("🥗 전체 동의하고 3분만에 내 맞춤 영양 진단하기 ➡️", use_container_width=True, key="toss_agree_btn"):
                     st.session_state.all_agree = True
@@ -1228,31 +1431,31 @@ def main():
             col_p1, col_p2, col_p3 = st.columns(3)
             with col_p1:
                 st.markdown("""
-                    <div style="background: rgba(76, 122, 94, 0.06); border: 1px solid rgba(76,122,94,0.15); border-radius: 14px; padding: 18px; min-height: 150px; text-align: center;">
-                        <h4 style="margin: 0 0 8px 0; color: #4C7A5E; font-family: 'Outfit'; font-size: 1.15rem;">01. 초개인화 문진</h4>
-                        <p style="font-size: 0.82rem; color: #64748b; line-height: 1.5; margin: 0;">
-                            성별 분기 데이터 수집, BMI 자가 판정, 23개 전항목 신체 습관 변수를 복합 설계하여 유저의 고유 데이터를 수렴합니다.
-                        </p>
-                    </div>
-                """, unsafe_allow_html=True)
+<div style="background: rgba(76, 122, 94, 0.06); border: 1px solid rgba(76,122,94,0.15); border-radius: 14px; padding: 18px; min-height: 150px; text-align: center;">
+    <h4 style="margin: 0 0 8px 0; color: #4C7A5E; font-family: 'Outfit'; font-size: 1.15rem;">01. 초개인화 문진</h4>
+    <p style="font-size: 0.82rem; color: #64748b; line-height: 1.5; margin: 0;">
+        성별 분기 데이터 수집, BMI 자가 판정, 23개 전항목 신체 습관 변수를 복합 설계하여 유저의 고유 데이터를 수렴합니다.
+    </p>
+</div>
+""", unsafe_allow_html=True)
             with col_p2:
                 st.markdown("""
-                    <div style="background: rgba(76, 122, 94, 0.06); border: 1px solid rgba(76,122,94,0.15); border-radius: 14px; padding: 18px; min-height: 150px; text-align: center;">
-                        <h4 style="margin: 0 0 8px 0; color: #10b981; font-family: 'Outfit'; font-size: 1.15rem;">02. ML 위험도 및 상한치 분석</h4>
-                        <p style="font-size: 0.82rem; color: #64748b; line-height: 1.5; margin: 0;">
-                            Scikit-Learn 로지스틱 회귀를 통한 만성질환 리스크 예측과 성분 중복에 따른 과다 복용 위험을 실시간 안전 필터링합니다.
-                        </p>
-                    </div>
-                """, unsafe_allow_html=True)
+<div style="background: rgba(76, 122, 94, 0.06); border: 1px solid rgba(76,122,94,0.15); border-radius: 14px; padding: 18px; min-height: 150px; text-align: center;">
+    <h4 style="margin: 0 0 8px 0; color: #10b981; font-family: 'Outfit'; font-size: 1.15rem;">02. ML 위험도 및 상한치 분석</h4>
+    <p style="font-size: 0.82rem; color: #64748b; line-height: 1.5; margin: 0;">
+        Scikit-Learn 로지스틱 회귀를 통한 만성질환 리스크 예측과 성분 중복에 따른 과다 복용 위험을 실시간 안전 필터링합니다.
+    </p>
+</div>
+""", unsafe_allow_html=True)
             with col_p3:
                 st.markdown("""
-                    <div style="background: rgba(76, 122, 94, 0.06); border: 1px solid rgba(76,122,94,0.15); border-radius: 14px; padding: 18px; min-height: 150px; text-align: center;">
-                        <h4 style="margin: 0 0 8px 0; color: #D9A441; font-family: 'Outfit'; font-size: 1.15rem;">03. 매트릭스 비교 및 캘린더 매핑</h4>
-                        <p style="font-size: 0.82rem; color: #64748b; line-height: 1.5; margin: 0;">
-                            상품 보관함 비교 매트릭스를 통한 스펙 병렬 대조와 3대 시간대별 복용 스케줄러 자동 편성으로 올바른 섭취 주기를 제안합니다.
-                        </p>
-                    </div>
-                """, unsafe_allow_html=True)
+<div style="background: rgba(76, 122, 94, 0.06); border: 1px solid rgba(76,122,94,0.15); border-radius: 14px; padding: 18px; min-height: 150px; text-align: center;">
+    <h4 style="margin: 0 0 8px 0; color: #D9A441; font-family: 'Outfit'; font-size: 1.15rem;">03. 매트릭스 비교 및 캘린더 매핑</h4>
+    <p style="font-size: 0.82rem; color: #64748b; line-height: 1.5; margin: 0;">
+        상품 보관함 비교 매트릭스를 통한 스펙 병렬 대조와 3대 시간대별 복용 스케줄러 자동 편성으로 올바른 섭취 주기를 제안합니다.
+    </p>
+</div>
+""", unsafe_allow_html=True)
                 
         # ==================== 화면 분기 1: STEP 1~5 설문 문진 작성 ====================
         elif st.session_state.step == 1:
@@ -1298,10 +1501,10 @@ def main():
                 else:
                     bmi_status = "비만"
                 st.markdown(f"""
-                    <div style="background: rgba(76, 122, 94, 0.1); border: 1px solid rgba(76, 122, 94, 0.2); border-radius: 8px; padding: 10px; margin-top: 10px;">
-                        💡 <strong>실시간 BMI 지수:</strong> <span style="color: #4C7A5E; font-weight: bold;">{bmi}</span> (분류: <strong>{bmi_status}</strong>)
-                    </div>
-                """, unsafe_allow_html=True)
+<div style="background: rgba(76, 122, 94, 0.1); border: 1px solid rgba(76, 122, 94, 0.2); border-radius: 8px; padding: 10px; margin-top: 10px;">
+    💡 <strong>실시간 BMI 지수:</strong> <span style="color: #4C7A5E; font-weight: bold;">{bmi}</span> (분류: <strong>{bmi_status}</strong>)
+</div>
+""", unsafe_allow_html=True)
 
             # STEP 2. 라이프스타일 & 일상 습관
             st.markdown("---")
@@ -1499,35 +1702,42 @@ def main():
                 st.markdown("### 🧬 내 몸에 필요한 6대 핵심 영양제 가산점 현황")
                 st.write("유저의 일상 라이프스타일, 기본 정보 및 주요 건강 고민(최대 3개)에 대한 스코어 분배율을 복합 분석하여 산출된 보너스 스코어입니다.")
                 st.markdown("""
-                    <div style="background: rgba(76, 122, 94, 0.07); border-left: 3px solid rgba(76, 122, 94, 0.5); border-radius: 6px; padding: 8px 14px; margin-bottom: 12px; font-size: 0.82rem; color: #64748b; line-height: 1.55;">
-                        ※ 전체 제품 추천 랭킹은 <strong style="color: #4C7A5E;">10점 만점 기준</strong>으로 정렬되며, 유저의 3대 핵심 건강 고민 매칭 결과에 따라 성분별로 최대 <strong style="color: #10b981;">+2.50점</strong>의 동적 가산점(보너스 스코어)이 부여된 현황입니다.
-                    </div>
-                """, unsafe_allow_html=True)
+<div style="background: rgba(76, 122, 94, 0.07); border-left: 3px solid rgba(76, 122, 94, 0.5); border-radius: 6px; padding: 8px 14px; margin-bottom: 12px; font-size: 0.82rem; color: #64748b; line-height: 1.55;">
+    ※ 전체 제품 추천 랭킹은 <strong style="color: #4C7A5E;">10점 만점 기준</strong>으로 정렬되며, 유저의 3대 핵심 건강 고민 매칭 결과에 따라 성분별로 최대 <strong style="color: #10b981;">+2.50점</strong>의 동적 가산점(보너스 스코어)이 부여된 현황입니다.
+</div>
+""", unsafe_allow_html=True)
                 
-                col_b1, col_b2, col_b3 = st.columns(3)
-                cols = [col_b1, col_b2, col_b3]
+                # 2/3폭 컬럼 안에서는 3열이 붕괴되므로 2열 균등 그리드 + 고정 높이 카드로 구성
+                bonus_cols = st.columns(2, gap="medium")
                 
                 keys = list(bonuses.keys())
                 for idx, key in enumerate(keys):
-                    col = cols[idx % 3]
+                    col = bonus_cols[idx % 2]
                     score = bonuses[key]
                     
                     comment = "기본 섭취 권장"
+                    badge_bg, badge_fg = "#EEF3EF", "#475569"
                     if score >= 8.0:
-                        comment = "🚨 매우 필요 (집중 섭취 추천)"
+                        comment = "🚨 매우 필요 · 집중 섭취 추천"
+                        badge_bg, badge_fg = "#FDECEC", "#B91C1C"
                     elif score >= 1.5:
-                        comment = "⭐ 적극 권장 (맞춤 매칭)"
+                        comment = "⭐ 적극 권장 · 맞춤 매칭"
+                        badge_bg, badge_fg = "#E3F1E6", "#1F3D2B"
                         
                     col.markdown(f"""
-                        <div style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 20px; box-shadow: 0 10px 30px -5px rgba(76, 122, 94, 0.04); padding: 18px; margin-bottom: 15px;">
-                            <span style="font-size: 0.85rem; color: #64748b;">영양소 성분</span>
-                            <h4 style="margin: 2px 0 6px 0; color: #1F2937;">{key}</h4>
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-size: 1.8rem; font-weight: 800; color: #4C7A5E;">+{score:.2f}</span>
-                                <span style="font-size: 0.8rem; color: #1F3D2B; background: #E3F1E6; padding: 2px 6px; border-radius: 5px;">{comment}</span>
-                            </div>
-                        </div>
-                    """, unsafe_allow_html=True)
+<div style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(76, 122, 94, 0.12); border-radius: 18px; box-shadow: 0 10px 30px -5px rgba(76, 122, 94, 0.06); padding: 16px 18px; margin-bottom: 14px; min-height: 128px; display: flex; flex-direction: column; justify-content: space-between;">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px;">
+        <div style="min-width: 0;">
+            <div style="font-size: 0.72rem; color: #64748b; letter-spacing: 0.3px;">영양소 성분</div>
+            <div style="font-size: 1.02rem; font-weight: 700; color: #1F2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{key}</div>
+        </div>
+        <div style="font-size: 1.7rem; font-weight: 800; color: #4C7A5E; flex-shrink: 0;">+{score:.2f}</div>
+    </div>
+    <div style="margin-top: 10px;">
+        <span style="display: inline-block; font-size: 0.74rem; color: {badge_fg}; background: {badge_bg}; padding: 4px 10px; border-radius: 999px; font-weight: 700;">{comment}</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
                     
             with col_board_right:
                 record_count = 0
@@ -1539,22 +1749,22 @@ def main():
                         pass
                 
                 st.markdown(f"""
-                    <div style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 20px; padding: 20px; box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.04); margin-top: 15px;">
-                        <h4 style="margin: 0 0 10px 0; color: #1F3D2B; font-family: 'Outfit', 'Noto Sans KR', sans-serif;">🤖 AI 건강 패턴 분석 (ML 가동 대기)</h4>
-                        <p style="font-size: 0.9rem; color: #475569; margin-bottom: 15px; line-height: 1.4;">
-                            수집된 대용량 웰니스 적재 로그를 기반으로 향후 <strong>XGBoost 위험도 분류기</strong> 모델이 연동되는 지능형 분석 영역입니다.
-                        </p>
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: #F6FBF7; border: 1px solid #E3F1E6; padding: 8px 12px; border-radius: 8px;">
-                            <span style="font-size: 0.8rem; color: #1F3D2B; font-weight:600;">📊 문진 데이터 축적 상태</span>
-                            <span style="background: #E3F1E6; color: #4C7A5E; font-weight: 700; padding: 2px 10px; border-radius: 20px; font-size: 0.85rem;">
-                                누적 데이터: {record_count}건
-                            </span>
-                        </div>
-                        <div style="margin-top: 15px; border-top: 1px dashed #E3F1E6; padding-top: 10px; font-size: 0.75rem; color: #475569; text-align: center;">
-                            ⏳ 목표 데이터셋 500건 충족 시 AI 심혈관/대사 위험도 스위칭 모듈 활성화
-                        </div>
-                    </div>
-                """, unsafe_allow_html=True)
+<div style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 20px; padding: 20px; box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.04); margin-top: 15px;">
+    <h4 style="margin: 0 0 10px 0; color: #1F3D2B; font-family: 'Outfit', 'Noto Sans KR', sans-serif;">🤖 AI 건강 패턴 분석 (ML 가동 대기)</h4>
+    <p style="font-size: 0.9rem; color: #475569; margin-bottom: 15px; line-height: 1.4;">
+        수집된 대용량 웰니스 적재 로그를 기반으로 향후 <strong>XGBoost 위험도 분류기</strong> 모델이 연동되는 지능형 분석 영역입니다.
+    </p>
+    <div style="display: flex; justify-content: space-between; align-items: center; background: #F6FBF7; border: 1px solid #E3F1E6; padding: 8px 12px; border-radius: 8px;">
+        <span style="font-size: 0.8rem; color: #1F3D2B; font-weight:600;">📊 문진 데이터 축적 상태</span>
+        <span style="background: #E3F1E6; color: #4C7A5E; font-weight: 700; padding: 2px 10px; border-radius: 20px; font-size: 0.85rem;">
+            누적 데이터: {record_count}건
+        </span>
+    </div>
+    <div style="margin-top: 15px; border-top: 1px dashed #E3F1E6; padding-top: 10px; font-size: 0.75rem; color: #475569; text-align: center;">
+        ⏳ 목표 데이터셋 500건 충족 시 AI 심혈관/대사 위험도 스위칭 모듈 활성화
+    </div>
+</div>
+""", unsafe_allow_html=True)
                 
             st.markdown("---")
             
@@ -1631,12 +1841,12 @@ def main():
 
             # --- 프로필 배너 (화이트 카드 섀도우) ---
             st.markdown(f"""
-                <div style="background: #FFFFFF; border: 1px solid #E3F1E6; border-radius: 20px; padding: 18px 25px; margin-bottom: 24px; box-shadow: 0 10px 30px -5px rgba(76, 122, 94, 0.08);">
-                    <strong>&#x1F4CA; 분석 대상자 프로필:</strong> {survey['gender']} ({survey['age']}) | BMI: {survey['bmi']} |
-                    &#x1F3AF; <strong>핵심 건강고민:</strong> {', '.join(survey['health_goals'])} |
-                    &#x1F6AB; <strong>배제 성분:</strong> {exclusions_str}
-                </div>
-            """, unsafe_allow_html=True)
+<div style="background: #FFFFFF; border: 1px solid #E3F1E6; border-radius: 20px; padding: 18px 25px; margin-bottom: 24px; box-shadow: 0 10px 30px -5px rgba(76, 122, 94, 0.08);">
+    <strong>&#x1F4CA; 분석 대상자 프로필:</strong> {survey['gender']} ({survey['age']}) | BMI: {survey['bmi']} |
+    &#x1F3AF; <strong>핵심 건강고민:</strong> {', '.join(survey['health_goals'])} |
+    &#x1F6AB; <strong>배제 성분:</strong> {exclusions_str}
+</div>
+""", unsafe_allow_html=True)
 
             # --- AI 총평 스트리밍 (화이트 카드 섀도우) ---
             st.markdown("#### &#x1F916; 뉴트리핏 AI 개인화 큐레이션 총평 리포트")
@@ -1647,16 +1857,22 @@ def main():
             )
             
             # 스트리밍 렌더러
-            st.markdown('<div class="side-util-card">', unsafe_allow_html=True)
+            # (주의) st.markdown('<div>')로 열고 별도 호출로 닫는 방식은 Streamlit이
+            # 호출 단위로 태그를 자동 닫아버려 "빈 박스 + 바깥 텍스트"로 분리되므로 금지.
             if not st.session_state.streaming_done:
+                # 최초 진입: 타이핑 연출 (스트리밍 종료 후 페이지 하단에서 rerun → 아래 박스 버전으로 재렌더)
                 def text_char_generator(text):
                     for char in text:
                         yield char
                         time.sleep(0.008)
                 st.write_stream(text_char_generator(ai_report_text))
             else:
-                st.write(ai_report_text)
-            st.markdown('</div>', unsafe_allow_html=True)
+                # 완료 상태: 텍스트를 박스 내부에 포함한 단일 markdown으로 렌더
+                st.markdown(f"""
+<div style="background: #FFFFFF; border: 1px solid #E3F1E6; border-radius: 20px; padding: 22px 26px; margin-bottom: 8px; box-shadow: 0 10px 30px -5px rgba(76, 122, 94, 0.08); font-size: 0.95rem; color: #1F2937; line-height: 1.75;">
+{ai_report_text}
+</div>
+""", unsafe_allow_html=True)
 
             # --- 🚨 AI 긴급 안전성 교차 필터 경고창 (펄스 애니메이션 스킨 적용) ---
             st.markdown("---")
@@ -1722,11 +1938,11 @@ def main():
                 if danger_messages:
                     for msg in danger_messages:
                         st.markdown(f"""
-                            <div class="pulse-warning" style="padding:15px 20px; border-radius:15px; margin-bottom:12px; color:#ef4444; font-weight:700; font-size:0.9rem; display:flex; align-items:center; gap:8px;">
-                                <span>⚠️</span>
-                                <span>{msg}</span>
-                            </div>
-                        """, unsafe_allow_html=True)
+<div class="pulse-warning" style="padding:15px 20px; border-radius:15px; margin-bottom:12px; color:#ef4444; font-weight:700; font-size:0.9rem; display:flex; align-items:center; gap:8px;">
+    <span>⚠️</span>
+    <span>{msg}</span>
+</div>
+""", unsafe_allow_html=True)
                 else:
                     st.success("🟢 식약처 안전 섭취 규격 충족 조합입니다.")
 
@@ -1767,12 +1983,12 @@ def main():
             
             st.markdown("<div style='font-size:0.78rem; color:#475569; margin: 15px 0 5px 0;'>* 위 가격은 시장 평균가 기준이며 실시간 가격 변동 및 품절이 발생할 수 있습니다.</div>", unsafe_allow_html=True)
             st.markdown(f"""
-                <div class="outlink-deck">
-                    <a class="outlink-btn outlink-btn-coupang" href="{coupang_url}" target="_blank">&#x1F7E0; 쿠팡 검색</a>
-                    <a class="outlink-btn outlink-btn-naver" href="{naver_url}" target="_blank">&#x1F7E2; 네이버 쇼핑</a>
-                    <a class="outlink-btn outlink-btn-iherb" href="{iherb_url}" target="_blank">&#x1F7E2; 아이허브 직구</a>
-                </div>
-            """, unsafe_allow_html=True)
+<div class="outlink-deck">
+    <a class="outlink-btn outlink-btn-coupang" href="{coupang_url}" target="_blank">&#x1F7E0; 쿠팡 검색</a>
+    <a class="outlink-btn outlink-btn-naver" href="{naver_url}" target="_blank">&#x1F7E2; 네이버 쇼핑</a>
+    <a class="outlink-btn outlink-btn-iherb" href="{iherb_url}" target="_blank">&#x1F7E2; 아이허브 직구</a>
+</div>
+""", unsafe_allow_html=True)
 
             # --- 비교 보관함 (단일 와이드로 완전 개편) ---
             st.markdown("---")
@@ -1790,7 +2006,8 @@ def main():
             if not selected_compare:
                 st.info("비교할 상품을 보관함에 담아주세요 🛒")
             else:
-                cols_compare = st.columns(len(selected_compare))
+                # 선택 개수와 무관하게 3열 고정 → 카드 폭 비율 일정 유지
+                cols_compare = st.columns(3, gap="medium")
                 for idx_c, combo_label in enumerate(selected_compare):
                     try:
                         rank_idx = int(combo_label.split('위.')[0].strip()) - 1
@@ -1905,13 +2122,13 @@ def main():
 
             # ==================== 식약처 공식 메디컬 면책 공지 (Disclaimer) 및 데이터 출처 신설 ====================
             st.markdown("""
-                <div style="background: #FFFFFF; border: 1px solid #E3F1E6; border-radius: 20px; padding: 25px; margin-top: 30px; box-shadow: 0 10px 30px -5px rgba(76, 122, 94, 0.08); font-size: 0.8rem; color: #475569; line-height: 1.6;">
-                    <h5 style="color: #1F3D2B; font-weight: 700; margin: 0 0 12px 0;">🛡️ 식약처 공식 메디컬 면책 공지 (Medical Disclaimer)</h5>
-                    본 서비스에서 제공하는 모든 웰니스 큐레이션 및 Scikit-Learn 머신러닝 기반 건강 위험도 예측 수치는 식약처(식품의약품안전처)에서 제공하는 건강기능식품 공공데이터포털(API)의 규격 정보에 근거합니다.<br>
-                    <strong>주의:</strong> 본 결과는 특정 질환에 대한 의사/약사의 의학적 치료 진단 또는 전문적인 약학적 처방을 대체할 수 없으며, 일반적인 건강 증진 목적의 참고 정보로만 제공됩니다. 특정 질환 치료 목적의 영양제 섭취 시 반드시 전문의와의 상담이 선행되어야 합니다.<br><br>
-                    <strong>💡 데이터 출처 고시:</strong> 식품의약품안전처 공공데이터포털 건강기능식품 기능성 원료 및 제품 정보 API 마스터 데이터베이스 (2026 기준).
-                </div>
-            """, unsafe_allow_html=True)
+<div style="background: #FFFFFF; border: 1px solid #E3F1E6; border-radius: 20px; padding: 25px; margin-top: 30px; box-shadow: 0 10px 30px -5px rgba(76, 122, 94, 0.08); font-size: 0.8rem; color: #475569; line-height: 1.6;">
+    <h5 style="color: #1F3D2B; font-weight: 700; margin: 0 0 12px 0;">🛡️ 식약처 공식 메디컬 면책 공지 (Medical Disclaimer)</h5>
+    본 서비스에서 제공하는 모든 웰니스 큐레이션 및 Scikit-Learn 머신러닝 기반 건강 위험도 예측 수치는 식약처(식품의약품안전처)에서 제공하는 건강기능식품 공공데이터포털(API)의 규격 정보에 근거합니다.<br>
+    <strong>주의:</strong> 본 결과는 특정 질환에 대한 의사/약사의 의학적 치료 진단 또는 전문적인 약학적 처방을 대체할 수 없으며, 일반적인 건강 증진 목적의 참고 정보로만 제공됩니다. 특정 질환 치료 목적의 영양제 섭취 시 반드시 전문의와의 상담이 선행되어야 합니다.<br><br>
+    <strong>💡 데이터 출처 고시:</strong> 식품의약품안전처 공공데이터포털 건강기능식품 기능성 원료 및 제품 정보 API 마스터 데이터베이스 (2026 기준).
+</div>
+""", unsafe_allow_html=True)
 
             st.markdown("---")
             col_btn_back1, col_btn_back2 = st.columns(2)
@@ -1939,14 +2156,14 @@ def main():
     # ==================== 메뉴 분기 2: 📊 뉴트리핏 데이터 인사이트 (Admin) ====================
     elif selected_menu == "📊 뉴트리핏 데이터 인사이트 (Admin)":
         st.markdown("""
-            <div style="background: linear-gradient(90deg, #1F3D2B, #4C7A5E); color: #FFFFFF;
-                        padding: 10px 20px; border-radius: 14px; margin-bottom: 18px;
-                        display: flex; align-items: center; gap: 10px; font-weight: 700;
-                        font-family: 'Noto Sans KR', sans-serif; letter-spacing: -0.2px;">
-                <span style="background: rgba(255,255,255,0.18); padding: 3px 12px; border-radius: 999px; font-size: 0.8rem;">🔒 관리자 전용</span>
-                <span>일반 이용자 화면과 분리된 백오피스 영역입니다</span>
-            </div>
-        """, unsafe_allow_html=True)
+<div style="background: linear-gradient(90deg, #1F3D2B, #4C7A5E); color: #FFFFFF;
+            padding: 10px 20px; border-radius: 14px; margin-bottom: 18px;
+            display: flex; align-items: center; gap: 10px; font-weight: 700;
+            font-family: 'Noto Sans KR', sans-serif; letter-spacing: -0.2px;">
+    <span style="background: rgba(255,255,255,0.18); padding: 3px 12px; border-radius: 999px; font-size: 0.8rem;">🔒 관리자 전용</span>
+    <span>일반 이용자 화면과 분리된 백오피스 영역입니다</span>
+</div>
+""", unsafe_allow_html=True)
         st.subheader("📊 뉴트리핏 백오피스 데이터 모니터링 시스템")
         
         # 헬퍼 함수: PDF 보고서 생성 엔진 (ReportLab 한글 폰트 매칭 지원)
@@ -2054,28 +2271,28 @@ def main():
         h1, h2, h3 = st.columns(3)
         with h1:
             st.markdown("""
-                <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 15px; text-align: center;">
-                    <span style="font-size: 1.5rem;">📡</span>
-                    <h6 style="margin: 5px 0; color: #4C7A5E; font-size: 0.85rem;">식약처 API 연동 상태</h6>
-                    <span style="font-size: 0.9rem; color: #10b981; font-weight: 700;">정상 (🟢)</span>
-                </div>
-            """, unsafe_allow_html=True)
+<div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 15px; text-align: center;">
+    <span style="font-size: 1.5rem;">📡</span>
+    <h6 style="margin: 5px 0; color: #4C7A5E; font-size: 0.85rem;">식약처 API 연동 상태</h6>
+    <span style="font-size: 0.9rem; color: #10b981; font-weight: 700;">정상 (🟢)</span>
+</div>
+""", unsafe_allow_html=True)
         with h2:
             st.markdown(f"""
-                <div style="background: rgba(76, 122, 94, 0.08); border: 1px solid rgba(76, 122, 94, 0.2); border-radius: 12px; padding: 15px; text-align: center;">
-                    <span style="font-size: 1.5rem;">📦</span>
-                    <h6 style="margin: 5px 0; color: #4C7A5E; font-size: 0.85rem;">제품 마스터 DB (27,779건)</h6>
-                    <span style="font-size: 0.9rem; color: #4C7A5E; font-weight: 700;">로드 완료 (🟢)</span>
-                </div>
-            """, unsafe_allow_html=True)
+<div style="background: rgba(76, 122, 94, 0.08); border: 1px solid rgba(76, 122, 94, 0.2); border-radius: 12px; padding: 15px; text-align: center;">
+    <span style="font-size: 1.5rem;">📦</span>
+    <h6 style="margin: 5px 0; color: #4C7A5E; font-size: 0.85rem;">제품 마스터 DB (27,779건)</h6>
+    <span style="font-size: 0.9rem; color: #4C7A5E; font-weight: 700;">로드 완료 (🟢)</span>
+</div>
+""", unsafe_allow_html=True)
         with h3:
             st.markdown("""
-                <div style="background: rgba(31, 61, 43, 0.08); border: 1px solid rgba(31, 61, 43, 0.2); border-radius: 12px; padding: 15px; text-align: center;">
-                    <span style="font-size: 1.5rem;">⚙️</span>
-                    <h6 style="margin: 5px 0; color: #1F3D2B; font-size: 0.85rem;">Scikit-Learn ML 커널</h6>
-                    <span style="font-size: 0.9rem; color: #1F3D2B; font-weight: 700;">실시간 가동 중 (🟢)</span>
-                </div>
-            """, unsafe_allow_html=True)
+<div style="background: rgba(31, 61, 43, 0.08); border: 1px solid rgba(31, 61, 43, 0.2); border-radius: 12px; padding: 15px; text-align: center;">
+    <span style="font-size: 1.5rem;">⚙️</span>
+    <h6 style="margin: 5px 0; color: #1F3D2B; font-size: 0.85rem;">Scikit-Learn ML 커널</h6>
+    <span style="font-size: 0.9rem; color: #1F3D2B; font-weight: 700;">실시간 가동 중 (🟢)</span>
+</div>
+""", unsafe_allow_html=True)
             
         st.markdown("---")
         
@@ -2253,30 +2470,30 @@ def main():
                 risk_color = "#ef4444"
                 
             st.markdown(f"""
-                <div style="background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(76, 122, 94, 0.1); border-radius: 12px; padding: 22px; text-align: center; margin-top: 10px;">
-                    <span style="font-size: 0.9rem; color: #64748b;">{ml_type_label}</span>
-                    <h2 style="margin: 5px 0 10px 0; font-family: 'Outfit', sans-serif; font-size: 2.8rem; font-weight: 800; color: {risk_color};">{predicted_risk:.1f}%</h2>
-                    <div style="background: rgba(76, 122, 94, 0.1); border-radius: 10px; height: 16px; width: 100%; position: relative; overflow: hidden; margin-bottom: 12px;">
-                        <div style="background: {risk_color}; width: {predicted_risk}%; height: 100%; border-radius: 10px; transition: width 0.6s ease-in-out;"></div>
-                    </div>
-                    <div style="font-size: 0.85rem; color: #475569;">
-                        상태 분석: <strong><span style="color: {risk_color};">{risk_status}</span></strong>
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
+<div style="background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(76, 122, 94, 0.1); border-radius: 12px; padding: 22px; text-align: center; margin-top: 10px;">
+    <span style="font-size: 0.9rem; color: #64748b;">{ml_type_label}</span>
+    <h2 style="margin: 5px 0 10px 0; font-family: 'Outfit', sans-serif; font-size: 2.8rem; font-weight: 800; color: {risk_color};">{predicted_risk:.1f}%</h2>
+    <div style="background: rgba(76, 122, 94, 0.1); border-radius: 10px; height: 16px; width: 100%; position: relative; overflow: hidden; margin-bottom: 12px;">
+        <div style="background: {risk_color}; width: {predicted_risk}%; height: 100%; border-radius: 10px; transition: width 0.6s ease-in-out;"></div>
+    </div>
+    <div style="font-size: 0.85rem; color: #475569;">
+        상태 분석: <strong><span style="color: {risk_color};">{risk_status}</span></strong>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
     # ==================== 엔터프라이즈 공식 푸터 ====================
     st.markdown("""
-        <div class="enterprise-footer">
-            <div class="footer-logo">&#x1F957; NutriFit Smart Dashboard</div>
-            <hr class="footer-divider"/>
-            <div class="footer-text">
-                &#169; 2026 NutriFit Inc. All rights reserved.<br>
-                본 서비스는 식약처 권장 가이드 및 공공데이터를 준수하며 의학적 진단을 대체하지 않습니다.<br>
-                <span style="color: #1F2937;">| 고객지원센터: 1644-2026 &nbsp;|&nbsp; 이메일: support@nutrifit.kr &nbsp;|&nbsp; 식약처 공공데이터 기반 서비스 |</span>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+<div class="enterprise-footer">
+    <div class="footer-logo">&#x1F957; NutriFit Smart Dashboard</div>
+    <hr class="footer-divider"/>
+    <div class="footer-text">
+        &#169; 2026 NutriFit Inc. All rights reserved.<br>
+        본 서비스는 식약처 권장 가이드 및 공공데이터를 준수하며 의학적 진단을 대체하지 않습니다.<br>
+        <span style="color: #1F2937;">| 고객지원센터: 1644-2026 &nbsp;|&nbsp; 이메일: support@nutrifit.kr &nbsp;|&nbsp; 식약처 공공데이터 기반 서비스 |</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
