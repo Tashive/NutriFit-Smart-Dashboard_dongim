@@ -451,10 +451,10 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 
 /* 이탤릭 세리프 포인트 (헤드라인 강조 단어 전용) */
+/* 이탤릭 사용 해제 — 강조는 굵기로만 표현 */
 .accent-italic {
-    font-family: 'Newsreader', 'Noto Sans KR', serif !important;
-    font-style: italic;
-    font-weight: 500 !important;
+    font-style: normal !important;
+    font-weight: 800 !important;
 }
 
 /* 스트림릿 기본 탑 헤더 숨김 처리 */
@@ -745,7 +745,7 @@ li[role="option"][aria-selected="true"] * {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(255, 255, 255, 0.92);
+    background: rgba(255, 255, 255, 0.97);
     border: 1px solid rgba(76, 122, 94, 0.12);
     padding: 12px 28px;
     position: fixed;
@@ -758,6 +758,18 @@ li[role="option"][aria-selected="true"] * {
     box-shadow: 0 15px 40px -12px rgba(31, 61, 43, 0.12);
     height: 64px;
     transition: all 0.3s ease-in-out;
+}
+/* 알약 바 뒤 전체 폭 불투명 스트립 — 스크롤 시 콘텐츠가 바 위/옆 틈으로 겹쳐 보이는 문제 차단 */
+.gnb-header::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(180deg, #F4FAF5 0%, #F4FAF5 78%, rgba(244, 250, 245, 0) 100%);
+    z-index: -1;
+    pointer-events: none;
 }
 .gnb-logo {
     font-family: 'Outfit', sans-serif;
@@ -1176,13 +1188,12 @@ li[role="option"][aria-selected="true"] * {
 """, unsafe_allow_html=True)
 
     # ===== 로그인/회원가입/관리자 인증은 메인 화면에서 완전히 제거, 사이드바 최하단으로 이동 =====
-    # 관리자 페이지는 URL 쿼리 파라미터(?admin=1)로 접근했을 때만 사이드바에 노출
-    _admin_access_requested = st.query_params.get("admin") == "1"
+    # 관리자 인증 패널은 사이드바 최하단에 항상 노출 (인증 성공 시에만 관리자 메뉴 활성화)
 
     admin_mode = (st.session_state.admin_password_val == "nutrifit2026!")
 
     menu_options = ["🥗 개인별 맞춤 큐레이션"]
-    if admin_mode and _admin_access_requested:
+    if admin_mode:
         menu_options.append("📊 뉴트리핏 데이터 인사이트 (Admin)")
 
     selected_menu = st.sidebar.radio("🧭 메뉴 바로가기", menu_options, index=0)
@@ -1223,17 +1234,16 @@ li[role="option"][aria-selected="true"] * {
                 else:
                     st.error("모든 정보를 올바르게 기입해 주세요.")
 
-    # 관리자 인증 패널 자체도 ?admin=1 접근일 때만 사이드바에 노출 (일반 소비자에게는 완전 비노출)
-    if _admin_access_requested:
-        with st.sidebar.expander("🔒 관리자 전용 인증", expanded=not admin_mode):
-            admin_password_input = st.text_input("관리자 인증 비밀번호:", type="password", value=st.session_state.admin_password_val, key="admin_pwd_input")
-            if admin_password_input != st.session_state.admin_password_val:
-                st.session_state.admin_password_val = admin_password_input
-                st.rerun()
-            if st.session_state.admin_password_val == "nutrifit2026!":
-                st.success("🔒 관리자 인증 성공")
-            elif st.session_state.admin_password_val:
-                st.error("비밀번호가 일치하지 않습니다.")
+    # 관리자 인증 패널 — 사이드바 최하단 상시 노출 (기본 접힘, 인증 성공 시 관리자 메뉴 활성화)
+    with st.sidebar.expander("🔒 관리자 전용 인증", expanded=False):
+        admin_password_input = st.text_input("관리자 인증 비밀번호:", type="password", value=st.session_state.admin_password_val, key="admin_pwd_input")
+        if admin_password_input != st.session_state.admin_password_val:
+            st.session_state.admin_password_val = admin_password_input
+            st.rerun()
+        if st.session_state.admin_password_val == "nutrifit2026!":
+            st.success("🔒 관리자 인증 성공 — 메뉴에 '데이터 인사이트'가 활성화되었습니다.")
+        elif st.session_state.admin_password_val:
+            st.error("비밀번호가 일치하지 않습니다.")
 
     # 2. 최상단 회원/비회원 배지 동적 노출 (백오피스 페이지가 아닐 때만 노출)
     if selected_menu == "🥗 개인별 맞춤 큐레이션":
@@ -1255,7 +1265,7 @@ li[role="option"][aria-selected="true"] * {
     <div class="hero-flex">
         <div class="hero-flex-text">
             <span class="hero-badge">🌿 Beta 오픈 중</span>
-            <div class="main-title">NutriFit – AI 개인 맞춤형<br>영양제 <span class="accent-italic">진단</span></div>
+            <div class="main-title">NutriFit – AI 개인 맞춤형<br>영양제 진단</div>
             <div class="hero-desc">나에게 꼭 맞는 영양제를 찾아드립니다.<br>나이·성별부터 음주·흡연·운동 같은 생활 습관, 지병·알약 삼킴 편의까지 —<br>나를 이루는 정보들을 종합해 지금 내 몸에 필요한 영양제만 골라 추천해 드려요.</div>
             <div class="sub-title">식약처 공인 데이터베이스 및 초개인화 가중 스코어링 기반 웰니스 큐레이션</div>
         </div>
