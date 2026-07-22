@@ -394,6 +394,50 @@ def render_product_grid(df_to_render, selected_row, db_data, survey):
 </div>'''
                     cols[c].markdown(static_card_html, unsafe_allow_html=True)
 
+def render_nutrient_ring_svg(label: str, percent: int, color: str) -> str:
+    """단일 영양소 섭취율을 나타내는 도넛 링 SVG를 반환."""
+    radius = 26
+    circumference = 2 * 3.14159265 * radius
+    offset = circumference * (1 - min(percent, 100) / 100)
+    import textwrap
+    html_str = f"""
+<div class="nutrient-ring-item">
+    <svg width="64" height="64" viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="{radius}" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="6"></circle>
+        <circle cx="32" cy="32" r="{radius}" fill="none" stroke="{color}" stroke-width="6"
+            stroke-dasharray="{circumference:.1f}" stroke-dashoffset="{offset:.1f}"
+            stroke-linecap="round" transform="rotate(-90 32 32)"></circle>
+        <text x="32" y="37" text-anchor="middle" class="nutrient-ring-value">{percent}%</text>
+    </svg>
+    <div class="nutrient-ring-label">{label}</div>
+</div>
+"""
+    return textwrap.dedent(html_str).strip()
+
+
+def render_hero_nutrient_card() -> str:
+    """히어로 섹션 우측에 배치할 영양소 섭취율 미리보기 글래스 카드."""
+    sample_nutrients = [
+        ("비타민D", 62, "#8FC3A2"),
+        ("마그네슘", 78, "#FFD166"),
+        ("오메가3", 45, "#F4A261"),
+        ("아연", 90, "#E9F5EC"),
+    ]
+    rings_html = "".join(
+        render_nutrient_ring_svg(label, pct, color) for label, pct, color in sample_nutrients
+    )
+    import textwrap
+    html_str = f"""
+<div class="hero-glass-card">
+    <div class="glass-title">🌿 내 영양소 섭취율 미리보기</div>
+    <div class="nutrient-ring-row">
+        {rings_html}
+    </div>
+</div>
+"""
+    return textwrap.dedent(html_str).strip()
+
+
 def main():
     # 프리미엄 CSS 스타일 커스텀 주입
     st.markdown("""
@@ -623,6 +667,74 @@ def main():
         .hero-panel .sub-title {
             color: rgba(255, 255, 255, 0.82) !important;
         }
+        .hero-flex {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            position: relative;
+            z-index: 1;
+        }
+        .hero-flex-text {
+            flex: 1.3;
+            min-width: 0;
+        }
+        .hero-flex-visual {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+        .hero-glass-card {
+            background: rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 24px;
+            padding: 24px 22px;
+            width: 100%;
+            max-width: 300px;
+            box-shadow: 0 20px 45px -15px rgba(18, 40, 27, 0.4);
+        }
+        .hero-glass-card .glass-title {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 14px;
+            text-align: center;
+        }
+        .nutrient-ring-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .nutrient-ring-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .nutrient-ring-label {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.85);
+            text-align: center;
+        }
+        .nutrient-ring-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 700;
+            fill: #FFFFFF;
+        }
+        @media (max-width: 900px) {
+            .hero-flex { flex-direction: column; }
+            .hero-flex-visual { justify-content: flex-start; }
+        }
+        .sidebar-divider {
+            border: 0;
+            border-top: 1px solid rgba(76, 122, 94, 0.18);
+            margin: 18px 0;
+        }
         .hero-badge {
             display: inline-flex;
             align-items: center;
@@ -782,23 +894,65 @@ def main():
             border-top: 1px solid rgba(76, 122, 94, 0.1);
             margin: 16px 0;
         }
+
+        /* ========== 사이드바 브랜드 톤 통일 (화이트 글래스모피즘 + 세이지 포인트) ========== */
+        [data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #F4FAF5 0%, #EAF6ED 100%);
+            border-right: 1px solid rgba(76, 122, 94, 0.12);
+        }
+        [data-testid="stSidebar"] > div {
+            padding-top: 1.2rem;
+        }
+        [data-testid="stSidebar"] h1,
+        [data-testid="stSidebar"] h2,
+        [data-testid="stSidebar"] h3,
+        [data-testid="stSidebar"] label,
+        [data-testid="stSidebar"] p {
+            font-family: 'Noto Sans KR', sans-serif !important;
+            color: #1F3D2B !important;
+        }
+        [data-testid="stSidebar"] [role="radiogroup"] {
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px solid rgba(76, 122, 94, 0.15);
+            border-radius: 16px;
+            padding: 10px;
+            gap: 4px;
+        }
+        [data-testid="stSidebar"] [role="radiogroup"] label {
+            border-radius: 10px;
+            padding: 8px 10px;
+            transition: background 0.2s ease-in-out;
+        }
+        [data-testid="stSidebar"] [role="radiogroup"] label:hover {
+            background: rgba(76, 122, 94, 0.1);
+        }
+        [data-testid="stSidebar"] .streamlit-expanderHeader {
+            background: rgba(255, 255, 255, 0.7) !important;
+            border: 1px solid rgba(76, 122, 94, 0.15) !important;
+            border-radius: 14px !important;
+            color: #1F3D2B !important;
+            font-weight: 600 !important;
+        }
+        [data-testid="stSidebar"] .stTextInput input {
+            border-radius: 10px !important;
+            border: 1px solid rgba(76, 122, 94, 0.25) !important;
+        }
+        [data-testid="stSidebar"] .stButton button {
+            background: #1F3D2B !important;
+            color: #FFFFFF !important;
+            border-radius: 999px !important;
+            border: none !important;
+        }
+        [data-testid="stSidebar"] .stButton button:hover {
+            background: #4C7A5E !important;
+        }
+        [data-testid="stSidebar"] hr {
+            border-top: 1px solid rgba(76, 122, 94, 0.18) !important;
+        }
         </style>
     """, unsafe_allow_html=True)
 
-    # ===== 최상단 브랜드 GNB 헤더 네비게이션 =====
-    st.markdown("""
-        <div class="gnb-header">
-            <div class="gnb-logo">&#x1F957; NutriFit</div>
-            <div class="gnb-nav">
-                <span class="gnb-link">&#x1F4CB; 소개</span>
-                <span class="gnb-link gnb-link-highlight">&#x1FA7A; AI 맞춤 추천</span>
-                <span class="gnb-link">&#x26A0;&#xFE0F; 내 영양제 초과 진단</span>
-                <span class="gnb-link">&#x1F512; 백오피스</span>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # ===== 최상단 GNB 연동 백오피스 & 멤버십 로그인 통합 인증 센터 =====
+    # ===== 최상단 브랜드 GNB 헤더 (순수 브랜드 바 — 클릭 불가 죽은 링크 제거) =====
     if 'user_logged_in' not in st.session_state:
         st.session_state.user_logged_in = False
     if 'logged_in_username' not in st.session_state:
@@ -806,8 +960,35 @@ def main():
     if 'admin_password_val' not in st.session_state:
         st.session_state.admin_password_val = ""
 
-    with st.expander("🔑 멤버십 로그인 & 🔒 백오피스 관리자 인증 패널", expanded=False):
-        tab_login, tab_register, tab_admin = st.tabs(["🔑 로그인 데모", "📝 회원가입 데모", "🔒 시스템 관리자 인증"])
+    _gnb_status_label = (
+        f"&#x1F464; {st.session_state.logged_in_username}님"
+        if st.session_state.user_logged_in else "&#x1F7E2; AI 맞춤 추천 진행 중"
+    )
+    st.markdown(f"""
+        <div class="gnb-header">
+            <div class="gnb-logo">&#x1F957; NutriFit</div>
+            <div class="gnb-nav">
+                <span class="gnb-link gnb-link-highlight">{_gnb_status_label}</span>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # ===== 로그인/회원가입/관리자 인증은 메인 화면에서 완전히 제거, 사이드바 최하단으로 이동 =====
+    # 관리자 페이지는 URL 쿼리 파라미터(?admin=1)로 접근했을 때만 사이드바에 노출
+    _admin_access_requested = st.query_params.get("admin") == "1"
+
+    admin_mode = (st.session_state.admin_password_val == "nutrifit2026!")
+
+    menu_options = ["🥗 개인별 맞춤 큐레이션"]
+    if admin_mode and _admin_access_requested:
+        menu_options.append("📊 뉴트리핏 데이터 인사이트 (Admin)")
+
+    selected_menu = st.sidebar.radio("🧭 메뉴 바로가기", menu_options, index=0)
+
+    st.sidebar.markdown('<hr class="sidebar-divider">', unsafe_allow_html=True)
+
+    with st.sidebar.expander("🔑 멤버십 로그인 / 회원가입", expanded=False):
+        tab_login, tab_register = st.tabs(["로그인", "회원가입"])
         with tab_login:
             if not st.session_state.user_logged_in:
                 login_id_val = st.text_input("아이디:", key="login_id")
@@ -821,7 +1002,7 @@ def main():
                     else:
                         st.error("아이디와 비밀번호를 입력해 주세요.")
             else:
-                st.markdown(f"**👤 현재 로그인 계정: `{st.session_state.logged_in_username}`님**")
+                st.markdown(f"**👤 `{st.session_state.logged_in_username}`님**")
                 st.write("✅ 장바구니 실시간 동기화 상태 활성화")
                 if st.button("로그아웃", key="logout_btn"):
                     st.session_state.user_logged_in = False
@@ -839,25 +1020,18 @@ def main():
                         st.error("비밀번호가 일치하지 않습니다.")
                 else:
                     st.error("모든 정보를 올바르게 기입해 주세요.")
-        with tab_admin:
-            admin_password_input = st.text_input("시스템 관리자 인증 비밀번호:", type="password", value=st.session_state.admin_password_val, help="우리 팀원 전용 백오피스 인증 창입니다.", key="admin_pwd_input")
+
+    # 관리자 인증 패널 자체도 ?admin=1 접근일 때만 사이드바에 노출 (일반 소비자에게는 완전 비노출)
+    if _admin_access_requested:
+        with st.sidebar.expander("🔒 관리자 전용 인증", expanded=not admin_mode):
+            admin_password_input = st.text_input("관리자 인증 비밀번호:", type="password", value=st.session_state.admin_password_val, key="admin_pwd_input")
             if admin_password_input != st.session_state.admin_password_val:
                 st.session_state.admin_password_val = admin_password_input
                 st.rerun()
             if st.session_state.admin_password_val == "nutrifit2026!":
-                st.success("🔑 관리자 인증 성공! 백오피스 메뉴가 활성화되었습니다.")
+                st.success("🔒 관리자 인증 성공")
             elif st.session_state.admin_password_val:
                 st.error("비밀번호가 일치하지 않습니다.")
-
-    admin_mode = (st.session_state.admin_password_val == "nutrifit2026!")
-    if admin_mode:
-        st.sidebar.success("🔑 관리자 인증 성공! 백오피스가 활성화되었습니다.")
-        
-    menu_options = ["🥗 개인별 맞춤 큐레이션"]
-    if admin_mode:
-        menu_options.append("📊 뉴트리핏 데이터 인사이트 (Admin)")
-        
-    selected_menu = st.sidebar.radio("🧭 메뉴 바로가기", menu_options, index=0)
 
     # 2. 최상단 회원/비회원 배지 동적 노출 (백오피스 페이지가 아닐 때만 노출)
     if selected_menu == "🥗 개인별 맞춤 큐레이션":
@@ -873,13 +1047,22 @@ def main():
             </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("""
-        <div class="hero-panel">
+    import textwrap
+    hero_html = f"""
+<div class="hero-panel">
+    <div class="hero-flex">
+        <div class="hero-flex-text">
             <span class="hero-badge">🌿 Beta 오픈 중</span>
             <div class="main-title">나에게 꼭 맞는<br>영양 <span class="accent-italic">밸런스</span>를 찾아드립니다</div>
             <div class="sub-title">식약처 공인 데이터베이스 및 초개인화 가중 스코어링 기반 웰니스 큐레이션</div>
         </div>
-    """, unsafe_allow_html=True)
+        <div class="hero-flex-visual">
+            {render_hero_nutrient_card()}
+        </div>
+    </div>
+</div>
+"""
+    st.markdown(textwrap.dedent(hero_html).strip(), unsafe_allow_html=True)
 
     db_data = load_foodsafety_db()
 
@@ -1755,6 +1938,15 @@ def main():
             
     # ==================== 메뉴 분기 2: 📊 뉴트리핏 데이터 인사이트 (Admin) ====================
     elif selected_menu == "📊 뉴트리핏 데이터 인사이트 (Admin)":
+        st.markdown("""
+            <div style="background: linear-gradient(90deg, #1F3D2B, #4C7A5E); color: #FFFFFF;
+                        padding: 10px 20px; border-radius: 14px; margin-bottom: 18px;
+                        display: flex; align-items: center; gap: 10px; font-weight: 700;
+                        font-family: 'Noto Sans KR', sans-serif; letter-spacing: -0.2px;">
+                <span style="background: rgba(255,255,255,0.18); padding: 3px 12px; border-radius: 999px; font-size: 0.8rem;">🔒 관리자 전용</span>
+                <span>일반 이용자 화면과 분리된 백오피스 영역입니다</span>
+            </div>
+        """, unsafe_allow_html=True)
         st.subheader("📊 뉴트리핏 백오피스 데이터 모니터링 시스템")
         
         # 헬퍼 함수: PDF 보고서 생성 엔진 (ReportLab 한글 폰트 매칭 지원)
